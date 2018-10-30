@@ -37,6 +37,6 @@ app.use((req, res, next) => {
 
 app.use('/api', require('./api'))
 
-app.listen(config.mysql.port, () => {
-  console.log('ready', config.mysql.port)
+app.listen(config.port, () => {
+  console.log('ready', config.port)
 })
