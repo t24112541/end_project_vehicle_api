@@ -58,10 +58,17 @@ router.post("/dep_add",async (req,res)=>{
   }catch(e){res.send({ok:false,txt:"ไม่สามารถเพิ่มข้อมูลได้",alt:"error"})}
 })
 
-router.get("/dep_del/:d_id",async (req,res)=>{
+router.post("/dep_del",async (req,res)=>{
   try{
     let d_id=await req.db("pk_department").del().where({
-      d_id:req.params.d_id
+      d_id:req.body.d_id
+    })
+    let log=await req.db("pk_department_log").insert({
+    	d_id:req.body.d_id,
+    	d_code:req.body.d_code,
+      d_name:req.body.d_name,
+      u_id:req.body.u_id,
+      d_log_work:"ลบข้อมูล",
     })
     res.send({ok:true,txt:"ลบข้อมูล "+req.body.d_id+" สำเร็จ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถลบข้อมูลได้",alt:"error"})}

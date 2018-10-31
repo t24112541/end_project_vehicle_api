@@ -5,7 +5,8 @@ module.exports = {
     host : 'localhost',
     user : 'root',
     password : '',
-    database : 'project_vehicle'
+    database : 'project_vehicle',
+    timezone: 'asia/bangkok',
   },
   socket: {
     url: 'https://socket.bpcd.xenex.io',
