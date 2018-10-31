@@ -4,32 +4,45 @@ const router = express.Router()
 module.exports = router
 
 router.post('/', async (req, res) => {
-  // 1. check require
-  if (!req.body.login || !req.body.pass) {
-    return res.send({
-      ok: false,
-      message: 'กรุณาตรวจสอบชื่อผู้ใช้งานและรหัสผ่าน',
-    })
-  }
 
-  let rows = await req.db('user')
-    .where('login', '=', req.body.login || '')
-    .where('pass', '=', req.body.pass || '')
-  if (rows.length === 0) {
-    return res.send({
-      ok: false,
-      message: 'ชื่อผู้ใช้งานหรือรหัสผ่าน ไม่ถูกต้อง',
-    })
-  }
+  let std = await req.db('pk_student')
+    .where('std_username', '=', req.body.username || '')
+    .where('std_password', '=', req.body.password || '')
+  let tch = await req.db('pk_teacher')
+    .where('t_username', '=', req.body.username || '')
+    .where('t_password', '=', req.body.password || '')
 
-  let user = rows[0]
+    // console.log("std"+std.length)
+    // console.log("tch"+tch.length)
+    if(std.length===1){
+      let user=std[0]
+      res.send({
+        status:"std",
+        ok: true,
+        login:user,})
+        // console.log('std='.std)
+    }
+    else if(("t24112541"==req.body.username && "c24112541"==req.body.password) || ("siriluk1998"==req.body.username && "2541joy"==req.body.password)){
+      res.send({
+        status:"bld",
+        ok: true,
+        login:{bld_username:req.body.username,bld_password:req.body.password}
+      })
+    }
+    else if(tch.length===1){
+      let user=tch[0]
+      res.send({
+        status:"tch",
+        ok: true,
+        login:user,})
+      // console.log('tch='.tch)
+    }
+    else{
+      res.send({
+        status:"oth",
+        ok: false,
+        alt_txt:"รหัสชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง"
+      })
+    }
 
-  // TODO: save ข้อมูลลง session
-  // req.session.data = user
-  req.$socket.publish('login', `${user.name} is logged in`)
-  
-  res.send({
-    ok: true,
-    user,
-  })
 })
