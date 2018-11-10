@@ -7,6 +7,8 @@ module.exports = router
 router.get('/list', async (req, res) => {
   try {
     let rows = await req.db('pk_department').select('*')
+    .where("t_status","!=",0)
+    .orderBy("d_id","desc")
     res.send({
       ok: true,
       datas: rows,
@@ -60,9 +62,9 @@ router.post("/dep_add",async (req,res)=>{
 
 router.post("/dep_del",async (req,res)=>{
   try{
-    let d_id=await req.db("pk_department").del().where({
-      d_id:req.body.d_id
-    })
+    let d_id=await req.db("pk_department").update({
+      t_status:"0"
+    }).where({d_id:req.body.d_id})
     let log=await req.db("pk_department_log").insert({
     	d_id:req.body.d_id,
     	d_code:req.body.d_code,
@@ -82,36 +84,41 @@ router.post("/dep_update",async(req,res)=>{
     }).where({
       d_id:req.body.d_id
     })
+    let log=await req.db("pk_department_log").insert({
+    	d_id:req.body.d_id,
+    	d_code:req.body.d_code,
+      d_name:req.body.d_name,
+      u_id:req.body.u_id,
+      d_log_work:"แก้ไขข้อมูล",
+    })
     res.send({ok:true,txt:"แก้ไขข้อมูล "+req.body.d_name+" สำเร็จ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถแก้ไขข้อมูล "+req.body.d_name+" ได้",alt:"error"})}
 })
 
 
-router.post('/save2', (req, res) => {
-  let db = req.db  
-  db('t1').insert({}).then(ids => {
-    let id = ids[0]
-    Promise.all([
-      db('t2').insert({}).catch(),
-      db('t3').insert({}).catch(),
-    ]).then(() => {
-      res.send({status: true})
-    }).catch(err => {
-      res.send({status: false})
-    })    
-  })
-  console.log('ok')
+router.post('/restore', async (req, res) => {
+  try {
+    let rows = await req.db(req.body.data).select('*').where({run_id: req.body.id})
+    let restore=await req.db(req.body.target).update({
+      t_status:1,
+      d_code:rows[0].d_code,
+      d_name:rows[0].d_name,
+    }).where({d_id:rows[0].d_id})
+    let log=await req.db(req.body.data).insert({
+    	d_id:rows[0].d_id,
+    	d_code:rows[0].d_code,
+      d_name:rows[0].d_name,
+      u_id:req.body.u_id,
+      d_log_work:"เรียกคืนข้อมูล",
+    })
+    res.send({
+      ok: true,
+      datas: rows,
+    })
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+    console.log("err")
+  }
 })
-// router.get('/save3', async (req, res) => {
-//   try {
-//     let db = req.db  
-//     let ids = await db('t1').insert({})
-//     await Promise.all([
-//       db('t2').insert({}),
-//       db('t3').insert({})
-//     ])
-//     res.send({status: true})
-//   } catch (e) {
-//     res.send({status: false})
-//   }
-// })
+
+
