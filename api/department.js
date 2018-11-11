@@ -80,7 +80,6 @@ router.post("/dep_update",async(req,res)=>{
     let sql=await req.db("pk_department").update({
         d_code:req.body.d_code,
         d_name:req.body.d_name,
-
     }).where({
       d_id:req.body.d_id
     })
@@ -89,12 +88,25 @@ router.post("/dep_update",async(req,res)=>{
     	d_code:req.body.d_code,
       d_name:req.body.d_name,
       u_id:req.body.u_id,
-      d_log_work:"แก้ไขข้อมูล",
+      d_log_work:req.body.type
     })
     res.send({ok:true,txt:"แก้ไขข้อมูล "+req.body.d_name+" สำเร็จ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถแก้ไขข้อมูล "+req.body.d_name+" ได้",alt:"error"})}
 })
-
+router.post("/log",async (req,res)=>{
+  try{
+    let log=await req.db("pk_department_log").insert({
+    	d_id:req.body.d_id,
+    	d_code:req.body.d_code,
+      d_name:req.body.d_name,
+      u_id:req.body.u_id,
+      d_log_work:req.body.type
+    })
+    res.send({
+      ok:true,
+    })
+  }catch(e){res.send({ok:false,txt:"(-_-') (log!) ไม่สามารถบันทึกการทำงานได้",alt:"error"})}
+})
 
 router.post('/restore', async (req, res) => {
   try {
@@ -112,12 +124,10 @@ router.post('/restore', async (req, res) => {
       d_log_work:"เรียกคืนข้อมูล",
     })
     res.send({
-      ok: true,
-      datas: rows,
+      ok:true,txt:"เรียกคืนข้อมูล "+rows[0].d_name+" สำเร็จ",alt:"success"
     })
   } catch (e) {
-    res.send({ ok: false, error: e.message })
-    console.log("err")
+    res.send({ ok: false,txt:"(-_-') (restore!) ไม่สามารถเรียกคืนข้อมูลได้",alt:"error"})
   }
 })
 
