@@ -55,6 +55,7 @@ router.get('/log_group', async (req, res) => {
 router.post('/log_group_show', async (req, res) => {
   try {
     let rows = await req.db('pk_group_log').select('*').orderBy('run_id', 'desc')
+    .innerJoin('pk_department', 'pk_group_log.d_code', 'pk_department.d_code')
     .where({
       g_id: req.body.g_id
     })
