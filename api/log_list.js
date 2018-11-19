@@ -65,6 +65,75 @@ router.post('/log_group_show', async (req, res) => {
     })
   } catch (e) {
     res.send({ ok: false, error: e.message })
+  }fxgnxvc
+})
+////////////////////////////////////////// log teacher ///////////////////////////////////
+router.get('/log_teacher', async (req, res) => {
+  try {
+    let teacher = await req.db('pk_teacher_log')
+    .innerJoin('pk_department', 'pk_teacher_log.d_code', 'pk_department.d_code')
+    .orderBy('run_id', 'desc')
+    .innerJoin('pk_teacher', 'pk_teacher_log.u_id', 'pk_teacher.t_username')
+    .groupByRaw("t_id")
+    .select("*")
+    .count("t_id as count")
+
+    let admin = await req.db('pk_teacher_log')
+    .innerJoin('pk_department', 'pk_teacher_log.d_code', 'pk_department.d_code')
+    .orderBy('run_id', 'desc')
+    .innerJoin('pk_admin', 'pk_teacher_log.u_id', 'pk_admin.a_username')
+    .groupByRaw("t_id")
+    .select("*")
+    .count("t_id as count")
+
+    console.log(teacher.length)
+    console.log(admin.length)
+    // if(teacher.length!=0){
+    //   res.send({
+    //     ok: true,
+    //     datas: teacher,
+    //   })
+    // }
+    // else if(admin.length!=0){
+    //   res.send({
+    //     ok: true,
+    //     datas: admin,
+    //   })
+    // }
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
   }
 })
 
+router.post('/log_teacher_show', async (req, res) => {
+  try {
+    let teacher = await req.db('pk_teacher_log').select('*').orderBy('run_id', 'desc')
+    .innerJoin('pk_department', 'pk_teacher_log.d_code', 'pk_department.d_code')
+    .innerJoin('pk_teacher', 'pk_teacher_log.u_id', 'pk_teacher.t_username')
+    .where({
+      t_id: req.body.t_id
+    })
+    let admin = await req.db('pk_teacher_log').select('*').orderBy('run_id', 'desc')
+    .innerJoin('pk_department', 'pk_teacher_log.d_code', 'pk_department.d_code')
+    .innerJoin('pk_admin', 'pk_teacher_log.u_id', 'pk_admin.a_username')
+    .where({
+      t_id: req.body.t_id
+    })
+    if(teacher.length!=0){
+      res.send({
+        ok: true,
+        datas: teacher,
+      })
+    }
+    else if(admin.length!=0){
+      res.send({
+        ok: true,
+        datas: admin,
+      })
+    }
+
+
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
