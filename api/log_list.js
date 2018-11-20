@@ -70,55 +70,129 @@ router.post('/log_group_show', async (req, res) => {
 ////////////////////////////////////////// log teacher ///////////////////////////////////
 router.get('/log_teacher', async (req, res) => {
   try {
-    let teacher = await req.db('pk_teacher_log')
-    .innerJoin('pk_department', 'pk_teacher_log.d_code', 'pk_department.d_code')
-    .orderBy('run_id', 'desc')
-    .innerJoin('pk_teacher', 'pk_teacher_log.u_id', 'pk_teacher.t_username')
-    .groupByRaw("t_id")
-    .select("*")
-    .count("t_id as count")
 
-    let admin = await req.db('pk_teacher_log')
+    let admin =await req.db("pk_admin").select(
+      "pk_teacher_log.t_id",
+      "pk_teacher_log.t_code",
+      "pk_teacher_log.t_name",
+      "pk_teacher_log.t_tel",
+      "pk_teacher_log.t_username",
+      "pk_teacher_log.t_password",
+      "pk_teacher_log.t_log_work",
+      "pk_teacher_log.t_log_date",
+      "pk_teacher_log.u_id",
+      "pk_admin.a_name as u_name",
+      "pk_department.d_code",
+      "pk_department.d_name",
+      "pk_admin.a_id",
+      "pk_department.d_id")
+    .innerJoin("pk_teacher_log","pk_admin.a_username","pk_teacher_log.u_id")
     .innerJoin('pk_department', 'pk_teacher_log.d_code', 'pk_department.d_code')
-    .orderBy('run_id', 'desc')
-    .innerJoin('pk_admin', 'pk_teacher_log.u_id', 'pk_admin.a_username')
-    .groupByRaw("t_id")
-    .select("*")
-    .count("t_id as count")
+    .groupByRaw("pk_teacher_log.t_id")
+    .count("pk_teacher_log.t_id as count")
+    .orderBy('pk_teacher_log.run_id', 'desc')
 
-    console.log(teacher.length)
-    console.log(admin.length)
-    // if(teacher.length!=0){
-    //   res.send({
-    //     ok: true,
-    //     datas: teacher,
-    //   })
-    // }
-    // else if(admin.length!=0){
-    //   res.send({
-    //     ok: true,
-    //     datas: admin,
-    //   })
-    // }
+    let teacher =await req.db("pk_teacher").select(
+      "pk_teacher_log.t_id",
+      "pk_teacher_log.t_code",
+      "pk_teacher_log.t_name",
+      "pk_teacher_log.t_tel",
+      "pk_teacher_log.t_username",
+      "pk_teacher_log.t_password",
+      "pk_teacher_log.t_log_work",
+      "pk_teacher_log.t_log_date",
+      "pk_teacher_log.u_id",
+      "pk_department.d_code",
+      "pk_department.d_name",
+      "pk_teacher.t_code",
+      "pk_teacher.t_name as u_name",
+      "pk_teacher.t_dep"
+    )
+    .innerJoin("pk_teacher_log","pk_teacher.t_username","pk_teacher_log.u_id")
+    .innerJoin('pk_department', 'pk_teacher_log.d_code', 'pk_department.d_code')
+    .groupByRaw("pk_teacher_log.t_id")
+    .count("pk_teacher_log.t_id as count")
+    .orderBy('pk_teacher_log.run_id', 'desc')
+
+    // console.log(teacher.length)
+    // console.log(admin.length)
+    if(teacher.length!=0){
+      res.send({
+        ok: true,
+        datas: teacher,
+      })
+    }
+    else if(admin.length!=0){
+      res.send({
+        ok: true,
+        datas: admin,
+      })
+    }
   } catch (e) {
     res.send({ ok: false, error: e.message })
   }
 })
 
 router.post('/log_teacher_show', async (req, res) => {
+  console.log(req.body.t_id)
   try {
-    let teacher = await req.db('pk_teacher_log').select('*').orderBy('run_id', 'desc')
+    let teacher =await req.db("pk_teacher").select(
+      "pk_teacher_log.t_id",
+      "pk_teacher_log.t_code",
+      "pk_teacher_log.t_name",
+      "pk_teacher_log.d_code",
+      "pk_teacher_log.t_tel",
+      "pk_teacher_log.t_username",
+      "pk_teacher_log.t_password",
+      "pk_teacher_log.t_log_work",
+      "pk_teacher_log.t_log_date",
+      "pk_teacher_log.u_id",
+      "pk_department.d_code",
+      "pk_department.d_name",
+      "pk_teacher.t_code",
+      "pk_teacher.t_name",
+      "pk_teacher.t_dep",
+      "pk_teacher_log.run_id",
+      "pk_teacher.t_id",
+      "pk_teacher.t_tel",
+      "pk_teacher.t_username",
+      "pk_teacher.t_password",
+      "pk_teacher.t_status",
+      "pk_department.d_id"
+    )
+    .innerJoin("pk_teacher_log","pk_teacher.t_username","pk_teacher_log.u_id")
     .innerJoin('pk_department', 'pk_teacher_log.d_code', 'pk_department.d_code')
-    .innerJoin('pk_teacher', 'pk_teacher_log.u_id', 'pk_teacher.t_username')
-    .where({
-      t_id: req.body.t_id
-    })
-    let admin = await req.db('pk_teacher_log').select('*').orderBy('run_id', 'desc')
+    .orderBy('pk_teacher_log.run_id', 'desc')
+    .where("pk_teacher_log.t_id","=" ,req.body.t_id)
+
+    let admin =await req.db("pk_admin").select(
+      "pk_teacher_log.t_id",
+      "pk_teacher_log.t_code",
+      "pk_teacher_log.t_name",
+      "pk_teacher_log.d_code",
+      "pk_teacher_log.t_tel",
+      "pk_teacher_log.t_username",
+      "pk_teacher_log.t_password",
+      "pk_teacher_log.t_log_work",
+      "pk_teacher_log.t_log_date",
+      "pk_teacher_log.u_id",
+      "pk_department.d_code",
+      "pk_department.d_name",
+      "pk_teacher.t_code",
+      "pk_teacher.t_name",
+      "pk_teacher.t_dep",
+      "pk_teacher_log.run_id",
+      "pk_teacher.t_id",
+      "pk_teacher.t_tel",
+      "pk_teacher.t_username",
+      "pk_teacher.t_password",
+      "pk_teacher.t_status",
+      "pk_department.d_id"
+    )
+    .innerJoin("pk_teacher_log","pk_admin.a_username","pk_teacher_log.u_id")
     .innerJoin('pk_department', 'pk_teacher_log.d_code', 'pk_department.d_code')
-    .innerJoin('pk_admin', 'pk_teacher_log.u_id', 'pk_admin.a_username')
-    .where({
-      t_id: req.body.t_id
-    })
+    .orderBy('pk_teacher_log.run_id', 'desc')
+    .where("pk_teacher_log.t_id","=" ,req.body.t_id)
     if(teacher.length!=0){
       res.send({
         ok: true,
