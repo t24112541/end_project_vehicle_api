@@ -11,9 +11,13 @@ router.post('/', async (req, res) => {
   let tch = await req.db('pk_teacher')
     .where('t_username', '=', req.body.username || '')
     .where('t_password', '=', req.body.password || '')
+  let admin = await req.db('pk_admin')
+    .where('a_username', '=', req.body.username || '')
+    .where('a_password', '=', req.body.password || '')
 
     // console.log("std"+std.length)
     // console.log("tch"+tch.length)
+    // console.log("admin"+tch.length)
     if(std.length===1){
       let user=std[0]
       res.send({
@@ -21,6 +25,13 @@ router.post('/', async (req, res) => {
         ok: true,
         login:user,})
         // console.log('std='.std)
+    }
+    else if(admin.length===1){
+      res.send({
+        status:"admin",
+        ok: true,
+        login:admin
+      })
     }
     else if(("t24112541"==req.body.username && "c24112541"==req.body.password) || ("siriluk1998"==req.body.username && "2541joy"==req.body.password)){
       res.send({
