@@ -8,7 +8,7 @@ router.get('/', async (req,res)=>{
 })
 router.get('/list', async (req, res) => {
   try {
-    let rows = await req.db('pk_teacher').select('*')
+    let rows = await req.db('pk_teacher').select('*').where("t_Status","!=",0)
     res.send({
       ok: true,
       datas: rows,
@@ -60,7 +60,7 @@ router.post("/teacher_add",async (req,res)=>{
   }catch(e){res.send({ok:false,txt:"ไม่สามารถเพิ่มข้อมูลได้",alt:"error"})}
 })
 
-router.post("/teacher_del/:t_id",async (req,res)=>{//console.log(req.params.t_id)
+router.post("/teacher_del",async (req,res)=>{//console.log(req.params.t_id)
   try{
     let t_id=await req.db("pk_teacher").update({t_status:"0"}).where({
       t_id:req.body.t_id
@@ -114,15 +114,16 @@ router.post('/restore', async (req, res) => {
       t_status:1,
       t_code:rows[0].t_code,
       t_name:rows[0].t_name,
-      t_dep:rows[0].t_dep,
+      t_dep:rows[0].d_code,
       t_tel:rows[0].t_tel,
       t_username:rows[0].t_username,
       t_password:rows[0].t_password,
     }).where({t_id:rows[0].t_id})
     let log=await req.db(req.body.data).insert({
+      t_id:rows[0].t_id,
       t_code:rows[0].t_code,
       t_name:rows[0].t_name,
-      d_code:rows[0].t_dep,
+      d_code:rows[0].d_code,
       t_tel:rows[0].t_tel,
       t_username:rows[0].t_username,
       t_password:rows[0].t_password,
