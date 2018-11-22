@@ -202,3 +202,161 @@ router.post('/log_teacher_show', async (req, res) => {
     res.send({ ok: false, error: e.message })
   }
 })
+
+
+////////////////////////////////////////// log student ///////////////////////////////////
+router.get('/log_student', async (req, res) => {
+  try {
+    let admin = await req.db('pk_admin')
+    .select(
+      "pk_admin.a_name as u_name",
+      "pk_student_log.run_id",
+      "pk_student_log.std_id",
+      "pk_student_log.std_code",
+      "pk_student_log.std_gender",
+      "pk_student_log.std_prename",
+      "pk_student_log.std_name",
+      "pk_student_log.std_lname",
+      "pk_student_log.std_pin_id",
+      "pk_student_log.std_birthday",
+      "pk_student_log.std_username",
+      "pk_student_log.std_password",
+      "pk_student_log.g_code",
+      "pk_student_log.std_blood",
+      "pk_student_log.std_log_date",
+      "pk_student_log.u_id",
+      "pk_student_log.std_log_work",
+      "pk_group.g_name",
+      "pk_department.d_name"
+    )
+    .innerJoin('pk_student_log', 'pk_admin.a_username', 'pk_student_log.u_id')
+    .innerJoin('pk_group', 'pk_student_log.g_code', 'pk_group.g_code')
+    .innerJoin('pk_department', 'pk_group.d_code', 'pk_department.d_code')
+    .orderBy('pk_student_log.run_id', 'desc')
+    .groupByRaw("pk_student_log.std_id")
+    .count("pk_student_log.std_id as count")
+
+    let teacher = await req.db('pk_teacher')
+    .select(
+      "pk_department.d_name",
+      "pk_group.g_name",
+      "pk_student_log.run_id",
+      "pk_student_log.std_id",
+      "pk_student_log.std_code",
+      "pk_student_log.std_gender",
+      "pk_student_log.std_prename",
+      "pk_student_log.std_name",
+      "pk_student_log.std_lname",
+      "pk_student_log.std_pin_id",
+      "pk_student_log.std_birthday",
+      "pk_student_log.std_username",
+      "pk_student_log.std_password",
+      "pk_student_log.g_code",
+      "pk_student_log.std_blood",
+      "pk_student_log.std_log_date",
+      "pk_student_log.u_id",
+      "pk_student_log.std_log_work",
+      "pk_teacher.t_name as u_name"
+    )
+    .innerJoin('pk_student_log', 'pk_teacher.t_username', 'pk_student_log.u_id')
+    .innerJoin('pk_group', 'pk_student_log.g_code', 'pk_group.g_code')
+    .innerJoin('pk_department', 'pk_group.d_code', 'pk_department.d_code')
+    .orderBy('pk_student_log.run_id', 'desc')
+    .groupByRaw("pk_student_log.std_id")
+    .count("pk_student_log.std_id as count")
+
+    // console.log(teacher.length)
+    // console.log(admin.length)
+    if(teacher.length!=0){
+      res.send({
+        ok: true,
+        datas: teacher,
+      })
+    }else if(admin.length!=0){
+      res.send({
+        ok: true,
+        datas: admin,
+      })
+    }
+    // res.send({
+    //   ok: true,
+    //   datas: rows,
+    // })
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
+
+router.post('/log_student_show', async (req, res) => {
+  try {
+    let admin = await req.db('pk_admin')
+    .select(
+      "pk_admin.a_name as u_name",
+      "pk_student_log.run_id",
+      "pk_student_log.std_id",
+      "pk_student_log.std_code",
+      "pk_student_log.std_gender",
+      "pk_student_log.std_prename",
+      "pk_student_log.std_name",
+      "pk_student_log.std_lname",
+      "pk_student_log.std_pin_id",
+      "pk_student_log.std_birthday",
+      "pk_student_log.std_username",
+      "pk_student_log.std_password",
+      "pk_student_log.g_code",
+      "pk_student_log.std_blood",
+      "pk_student_log.std_log_date",
+      "pk_student_log.u_id",
+      "pk_student_log.std_log_work",
+      "pk_group.g_name",
+      "pk_department.d_name"
+    )
+    .innerJoin('pk_student_log', 'pk_admin.a_username', 'pk_student_log.u_id')
+    .innerJoin('pk_group', 'pk_student_log.g_code', 'pk_group.g_code')
+    .innerJoin('pk_department', 'pk_group.d_code', 'pk_department.d_code')
+    .orderBy('pk_student_log.run_id', 'desc')
+    .where("pk_student_log.std_id","=",req.body.std_id)
+
+    let teacher = await req.db('pk_teacher')
+    .select(
+      "pk_department.d_name",
+      "pk_group.g_name",
+      "pk_student_log.run_id",
+      "pk_student_log.std_id",
+      "pk_student_log.std_code",
+      "pk_student_log.std_gender",
+      "pk_student_log.std_prename",
+      "pk_student_log.std_name",
+      "pk_student_log.std_lname",
+      "pk_student_log.std_pin_id",
+      "pk_student_log.std_birthday",
+      "pk_student_log.std_username",
+      "pk_student_log.std_password",
+      "pk_student_log.g_code",
+      "pk_student_log.std_blood",
+      "pk_student_log.std_log_date",
+      "pk_student_log.u_id",
+      "pk_student_log.std_log_work",
+      "pk_teacher.t_name as u_name"
+    )
+    .innerJoin('pk_student_log', 'pk_teacher.t_username', 'pk_student_log.u_id')
+    .innerJoin('pk_group', 'pk_student_log.g_code', 'pk_group.g_code')
+    .innerJoin('pk_department', 'pk_group.d_code', 'pk_department.d_code')
+    .orderBy('pk_student_log.run_id', 'desc')
+    .where("pk_student_log.std_id","=",req.body.std_id)
+
+    if(teacher.length!=0){
+      res.send({
+        ok: true,
+        datas: teacher,
+      })
+    }else if(admin.length!=0){
+      res.send({
+        ok: true,
+        datas: admin,
+      })
+    }
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
