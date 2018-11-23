@@ -1,6 +1,5 @@
 const express = require('express')
 const router = express.Router()
-
 module.exports = router
 
 
@@ -29,12 +28,37 @@ router.get("/sh_machine/:mc_id",async(req,res)=>{
   console.log('param='+req.params.mc_id)
   try{
     let db = req.db
-    let row = await req.db('pk_machine').select('*').where({
-      mc_id: req.params.mc_id
-    })
+    let rows = await req.db('pk_student').select(
+      "pk_machine.mc_id",
+      "pk_machine.mc_code",
+      "pk_machine.mc_brand",
+      "pk_machine.mc_series",
+      "pk_machine.std_id",
+      "pk_img.img_img",
+      "pk_student.std_id",
+      "pk_student.std_code",
+      "pk_student.std_gender",
+      "pk_student.std_prename",
+      "pk_student.std_name",
+      "pk_student.std_lname",
+      "pk_student.std_pin_id",
+      "pk_student.std_birthday",
+      "pk_student.std_username",
+      "pk_student.std_password",
+      "pk_student.g_code",
+      "pk_student.std_blood",
+      "pk_student.t_status",
+      "pk_img.img_id",
+      "pk_img.img_img",
+      "pk_img.u_code",
+      "pk_img.u_table"
+    ).where("pk_machine.mc_id","=",req.params.mc_id
+    )
+    .innerJoin('pk_machine', 'pk_machine.std_id', 'pk_student.std_code')
+    .innerJoin('pk_img', 'pk_machine.mc_id', 'pk_img.u_code')
     res.send({
       ok:true,
-      datas: row[0] || {},
+      datas: rows,
     })
   }catch(e){
     res.send({ok:false,error:e.message})
@@ -49,13 +73,18 @@ router.post("/machine_add",async (req,res)=>{
         mc_series:req.body.mc_series,
         std_id:req.body.std_id,
     })
+    let img=await req.db("pk_img").insert({
+      	img_img:req.body.img_img,
+        u_table:req.body.u_table,
+        u_code:mc_id,
+    })
     let log=await req.db("pk_machine_log").insert({
       mc_id:mc_id,
       mc_code:req.body.mc_code,
       mc_brand:req.body.mc_brand,
       mc_series:req.body.mc_series,
       std_id:req.body.std_id,
-      u_id:req.body.username,
+      u_id:req.body.u_id,
       mc_log_work:"เพิ่มข้อมูล"
     })
     res.send({ok:true,txt:"เพิ่มข้อมูล "+req.body.mc_code+" สำเร็จ",alt:"success"})
