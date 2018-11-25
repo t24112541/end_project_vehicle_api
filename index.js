@@ -24,7 +24,8 @@ app.use((req, res, next) => {
 })
 
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
+app.use(bodyParser.json({limit: "5000mb"}));
+app.use(bodyParser.urlencoded({limit: "5000mb", extended: true, parameterLimit:5000000}));
 
 app.use((req, res, next) => {
   req.db = require('./lib/db')
