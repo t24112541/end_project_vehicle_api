@@ -360,3 +360,129 @@ router.post('/log_student_show', async (req, res) => {
     res.send({ ok: false, error: e.message })
   }
 })
+
+////////////////////////////////////////// log machine ///////////////////////////////////
+router.get('/log_machine', async (req, res) => {
+  try {
+    let admin = await req.db('pk_admin').select(
+      "pk_admin.a_id",
+      "pk_admin.a_name as u_name",
+      "pk_admin.a_lname",
+      "pk_admin.p_id",
+      "pk_admin.a_tel",
+      "pk_admin.a_username",
+      "pk_admin.a_password",
+      "pk_machine_log.run_id",
+      "pk_machine_log.mc_id",
+      "pk_machine_log.mc_code",
+      "pk_machine_log.mc_brand",
+      "pk_machine_log.mc_series",
+      "pk_machine_log.std_id",
+      "pk_machine_log.mc_log_work",
+      "pk_machine_log.mc_log_date",
+      "pk_machine_log.u_id"
+    )
+    .innerJoin('pk_machine_log', 'pk_admin.a_username', 'pk_machine_log.u_id')
+    .orderBy('pk_machine_log.run_id', 'desc')
+    .groupByRaw("pk_machine_log.mc_id")
+    .count("pk_machine_log.mc_id as count")
+
+    let teacher = await req.db('pk_teacher').select(
+      "pk_teacher.t_id",
+      "pk_teacher.t_code",
+      "pk_teacher.t_name as u_name",
+      "pk_teacher.t_dep",
+      "pk_teacher.t_tel",
+      "pk_teacher.t_username",
+      "pk_teacher.t_password",
+      "pk_teacher.t_status",
+      "pk_machine_log.run_id",
+      "pk_machine_log.mc_id",
+      "pk_machine_log.mc_code",
+      "pk_machine_log.mc_brand",
+      "pk_machine_log.mc_series",
+      "pk_machine_log.std_id",
+      "pk_machine_log.mc_log_work",
+      "pk_machine_log.mc_log_date",
+      "pk_machine_log.u_id"
+    )
+    .innerJoin('pk_machine_log', 'pk_teacher.t_code', 'pk_machine_log.std_id')
+    .orderBy('pk_machine_log.run_id', 'desc')
+    .groupByRaw("pk_machine_log.mc_id")
+    .count("pk_machine_log.mc_id as count")
+
+    if(teacher.length!=0){
+      res.send({
+        ok: true,
+        datas: teacher,
+      })
+    }else if(admin.length!=0){
+      res.send({
+        ok: true,
+        datas: admin,
+      })
+    }
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
+
+router.post('/log_machine_show', async (req, res) => {
+  try {
+    let admin = await req.db('pk_admin').select(
+      "pk_admin.a_id",
+      "pk_admin.a_name as u_name",
+      "pk_admin.a_lname",
+      "pk_admin.p_id",
+      "pk_admin.a_tel",
+      "pk_admin.a_username",
+      "pk_admin.a_password",
+      "pk_machine_log.run_id",
+      "pk_machine_log.mc_id",
+      "pk_machine_log.mc_code",
+      "pk_machine_log.mc_brand",
+      "pk_machine_log.mc_series",
+      "pk_machine_log.std_id",
+      "pk_machine_log.mc_log_work",
+      "pk_machine_log.mc_log_date",
+      "pk_machine_log.u_id"
+    ).orderBy('run_id', 'desc')
+    .innerJoin('pk_machine_log', 'pk_admin.a_username', 'pk_machine_log.u_id')
+    .where("pk_machine_log.mc_id","=",req.body.mc_id)
+
+    let teacher = await req.db('pk_teacher').select(
+      "pk_teacher.t_id",
+      "pk_teacher.t_code",
+      "pk_teacher.t_name as u_name",
+      "pk_teacher.t_dep",
+      "pk_teacher.t_tel",
+      "pk_teacher.t_username",
+      "pk_teacher.t_password",
+      "pk_teacher.t_status",
+      "pk_machine_log.run_id",
+      "pk_machine_log.mc_id",
+      "pk_machine_log.mc_code",
+      "pk_machine_log.mc_brand",
+      "pk_machine_log.mc_series",
+      "pk_machine_log.std_id",
+      "pk_machine_log.mc_log_work",
+      "pk_machine_log.mc_log_date",
+      "pk_machine_log.u_id"
+    ).orderBy('run_id', 'desc')
+    .innerJoin('pk_machine_log', 'pk_teacher.t_code', 'pk_machine_log.std_id')
+    .where("pk_machine_log.mc_id","=",req.body.mc_id)
+    if(teacher.length!=0){
+      res.send({
+        ok: true,
+        datas: teacher,
+      })
+    }else if(admin.length!=0){
+      res.send({
+        ok: true,
+        datas: admin,
+      })
+    }
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
