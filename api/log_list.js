@@ -486,3 +486,132 @@ router.post('/log_machine_show', async (req, res) => {
     res.send({ ok: false, error: e.message })
   }
 })
+
+////////////////////////////////////////// log accessories ///////////////////////////////////
+router.get('/log_accessories', async (req, res) => {
+  try {
+    let admin = await req.db('pk_admin').select(
+      "pk_admin.a_id",
+      "pk_admin.a_name as u_name",
+      "pk_admin.a_lname",
+      "pk_admin.p_id",
+      "pk_admin.a_tel",
+      "pk_admin.a_username",
+      "pk_admin.a_password",
+      "pk_accessories_log.run_id",
+      "pk_accessories_log.ac_id",
+      "pk_accessories_log.ac_name",
+      "pk_accessories_log.ac_description",
+      "pk_accessories_log.ac_u_id",
+      "pk_accessories_log.ac_u_table",
+      "pk_accessories_log.u_id",
+      "pk_accessories_log.ac_log_work",
+      "pk_accessories_log.ac_log_date",
+
+    )
+    .innerJoin('pk_accessories_log', 'pk_admin.a_username', 'pk_accessories_log.u_id')
+    .orderBy('pk_accessories_log.run_id', 'desc')
+    .groupByRaw("pk_accessories_log.ac_id")
+    .count("pk_accessories_log.ac_id as count")
+
+    let teacher = await req.db('pk_teacher').select(
+      "pk_teacher.t_id",
+      "pk_teacher.t_code",
+      "pk_teacher.t_name as u_name",
+      "pk_teacher.t_dep",
+      "pk_teacher.t_tel",
+      "pk_teacher.t_username",
+      "pk_teacher.t_password",
+      "pk_teacher.t_status",
+      "pk_accessories_log.run_id",
+      "pk_accessories_log.ac_id",
+      "pk_accessories_log.ac_name",
+      "pk_accessories_log.ac_description",
+      "pk_accessories_log.ac_u_id",
+      "pk_accessories_log.ac_u_table",
+      "pk_accessories_log.u_id",
+      "pk_accessories_log.ac_log_work",
+      "pk_accessories_log.ac_log_date"
+    )
+    .innerJoin('pk_accessories_log', 'pk_teacher.t_code', 'pk_accessories_log.u_id')
+    .orderBy('pk_accessories_log.run_id', 'desc')
+    .groupByRaw("pk_accessories_log.ac_id")
+    .count("pk_accessories_log.ac_id as count")
+
+    if(teacher.length!=0){
+      res.send({
+        ok: true,
+        datas: teacher,
+      })
+    }else if(admin.length!=0){
+      res.send({
+        ok: true,
+        datas: admin,
+      })
+    }
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
+
+router.post('/log_accessories_show', async (req, res) => {
+  try {
+    let admin = await req.db('pk_admin').select(
+      "pk_admin.a_id",
+      "pk_admin.a_name as u_name",
+      "pk_admin.a_lname",
+      "pk_admin.p_id",
+      "pk_admin.a_tel",
+      "pk_admin.a_username",
+      "pk_admin.a_password",
+      "pk_accessories_log.run_id",
+      "pk_accessories_log.ac_id",
+      "pk_accessories_log.ac_name",
+      "pk_accessories_log.ac_description",
+      "pk_accessories_log.ac_u_id",
+      "pk_accessories_log.ac_u_table",
+      "pk_accessories_log.u_id",
+      "pk_accessories_log.ac_log_work",
+      "pk_accessories_log.ac_log_date",
+    )
+    .innerJoin('pk_accessories_log', 'pk_admin.a_username', 'pk_accessories_log.u_id')
+    .orderBy("pk_accessories_log.run_id","desc")
+    .where("pk_accessories_log.ac_id","=",req.body.ac_id)
+
+    let teacher = await req.db('pk_teacher').select(
+      "pk_teacher.t_id",
+      "pk_teacher.t_code",
+      "pk_teacher.t_name as u_name",
+      "pk_teacher.t_dep",
+      "pk_teacher.t_tel",
+      "pk_teacher.t_username",
+      "pk_teacher.t_password",
+      "pk_teacher.t_status",
+      "pk_accessories_log.run_id",
+      "pk_accessories_log.ac_id",
+      "pk_accessories_log.ac_name",
+      "pk_accessories_log.ac_description",
+      "pk_accessories_log.ac_u_id",
+      "pk_accessories_log.ac_u_table",
+      "pk_accessories_log.u_id",
+      "pk_accessories_log.ac_log_work",
+      "pk_accessories_log.ac_log_date"
+    )
+    .innerJoin('pk_accessories_log', 'pk_teacher.t_code', 'pk_accessories_log.u_id')
+    .orderBy("pk_accessories_log.run_id","desc")
+    .where("pk_accessories_log.ac_id","=",req.body.ac_id)
+    if(teacher.length!=0){
+      res.send({
+        ok: true,
+        datas: teacher,
+      })
+    }else if(admin.length!=0){
+      res.send({
+        ok: true,
+        datas: admin,
+      })
+    }
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})

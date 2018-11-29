@@ -21,14 +21,14 @@ router.post('/', async (req, res) => {
     if(std.length===1){
       let user=std[0]
       res.send({
-        status:"std",
+        status:"pk_student",
         ok: true,
         login:user,})
         // console.log('std='.std)
     }
     else if(admin.length===1){
       res.send({
-        status:"admin",
+        status:"pk_admin",
         ok: true,
         login:admin
       })
@@ -43,7 +43,7 @@ router.post('/', async (req, res) => {
     else if(tch.length===1){
       let user=tch[0]
       res.send({
-        status:"tch",
+        status:"pk_teacher",
         ok: true,
         login:user,})
       // console.log('tch='.tch)
