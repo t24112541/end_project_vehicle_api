@@ -29,7 +29,7 @@ router.get("/sh_machine/:mc_id",async(req,res)=>{
   console.log('param='+req.params.mc_id)
   try{
     let db = req.db
-    let rows = await req.db('pk_student').select(
+    let student = await req.db('pk_student').select(
       "pk_machine.mc_id",
       "pk_machine.mc_code",
       "pk_machine.mc_brand",
@@ -56,10 +56,42 @@ router.get("/sh_machine/:mc_id",async(req,res)=>{
     )
     .innerJoin('pk_machine', 'pk_machine.std_id', 'pk_student.std_code')
     .innerJoin('pk_img', 'pk_machine.mc_id', 'pk_img.u_code')
-    res.send({
-      ok:true,
-      datas: rows,
-    })
+
+    let teacher = await req.db('pk_teacher').select(
+      "pk_teacher.t_id",
+      "pk_teacher.t_code",
+      "pk_teacher.t_name",
+      "pk_teacher.t_dep",
+      "pk_teacher.t_tel",
+      "pk_teacher.t_username",
+      "pk_teacher.t_password",
+      "pk_teacher.t_status",
+      "pk_machine.mc_id",
+      "pk_machine.mc_code",
+      "pk_machine.mc_brand",
+      "pk_machine.mc_series",
+      "pk_machine.std_id",
+      "pk_machine.t_status",
+      "pk_img.img_id",
+      "pk_img.img_img",
+      "pk_img.u_code",
+      "pk_img.u_table"
+
+    ).where("pk_machine.mc_id","=",req.params.mc_id)
+    .innerJoin('pk_machine', 'pk_teacher.t_code', 'pk_machine.std_id')
+    .innerJoin('pk_img', 'pk_machine.mc_id', 'pk_img.u_code')
+
+    if(teacher.length!=0){
+      res.send({
+        ok: true,
+        datas: teacher,
+      })
+    }else if(student.length!=0){
+      res.send({
+        ok: true,
+        datas: student,
+      })
+    }
   }catch(e){
     res.send({ok:false,error:e.message})
   }
