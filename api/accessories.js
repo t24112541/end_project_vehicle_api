@@ -93,6 +93,36 @@ router.post("/sh_accessories",async(req,res)=>{
     res.send({ok:false,error:e.message})
   }
 })
+
+/////////////////////////////// user ////////////////////////////////////////
+
+router.post("/sh_accessories_w_std",async(req,res)=>{
+  try{
+    let db = req.db
+    let student = await req.db('pk_accessories').select(
+      "pk_accessories.ac_id",
+      "pk_accessories.ac_name",
+      "pk_accessories.ac_description",
+      "pk_accessories.ac_u_id",
+      "pk_accessories.ac_u_table",
+      "pk_accessories.t_status"
+    )
+    .innerJoin('pk_student', 'pk_accessories.ac_u_id', 'pk_student.std_code')
+    .where("pk_student.std_id","=",req.body.std_id)
+    .where("pk_accessories.ac_u_table","=","pk_student")
+    .orderBy("pk_accessories.ac_id","desc")
+
+    if(student.length!=0){
+      res.send({
+        ok: true,
+        datas: student,
+      })
+    }
+  }catch(e){
+    res.send({ok:false,error:e.message})
+  }
+})
+/////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////   26/11/61
 router.post("/accessories_add",async (req,res)=>{
   try{
