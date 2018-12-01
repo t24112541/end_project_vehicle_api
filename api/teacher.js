@@ -22,12 +22,26 @@ router.get("/sh_teacher/:t_id",async(req,res)=>{
   console.log('param='+req.params.t_id)
   try{
     let db = req.db
-    let row = await req.db('pk_teacher').select('*').where({
+    let row = await req.db('pk_teacher').select(
+      "pk_teacher.t_id",
+      "pk_teacher.t_code",
+      "pk_teacher.t_name",
+      "pk_teacher.t_dep",
+      "pk_teacher.t_tel",
+      "pk_teacher.t_username",
+      "pk_teacher.t_password",
+      "pk_teacher.t_status",
+      "pk_department.d_name",
+      "pk_group.g_name"
+    )
+    .innerJoin('pk_department', 'pk_teacher.t_dep', 'pk_department.d_code')
+    .innerJoin('pk_group', 'pk_group.d_code', 'pk_department.d_code')
+    .where({
       t_id: req.params.t_id
     })
     res.send({
       ok:true,
-      datas: row[0] || {},
+      datas: row || {},
     })
   }catch(e){
     res.send({ok:false,error:e.message})
@@ -43,6 +57,18 @@ router.post("/teacher_add",async (req,res)=>{
         t_tel:req.body.t_tel,
       	t_username:req.body.t_code,
       	t_password:req.body.t_tel
+    })
+    let pk_match_std_tch1=await req.db("pk_match_std_tch").insert({
+      t_id:req.body.t_code,
+      g_code:req.body.mst_1
+    })
+    let pk_match_std_tch2=await req.db("pk_match_std_tch").insert({
+      t_id:req.body.t_code,
+      g_code:req.body.mst_2
+    })
+    let pk_match_std_tch3=await req.db("pk_match_std_tch").insert({
+      t_id:req.body.t_code,
+      g_code:req.body.mst_3
     })
     let log=await req.db("pk_teacher_log").insert({
       t_id:t_id,
@@ -76,6 +102,7 @@ router.post("/teacher_del",async (req,res)=>{//console.log(req.params.t_id)
         t_log_work:"ลบข้อมูล",
         u_id:req.body.u_id
     })
+
     res.send({ok:true,txt:"ลบข้อมูล "+req.body.t_id+" สำเร็จ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถลบข้อมูลได้",alt:"error"})}
 })
@@ -91,6 +118,18 @@ router.post("/teacher_update",async(req,res)=>{//console.log(req.body.t_id)
     }).where({
       t_id:req.body.t_id
     })
+    let pk_match_std_tch1=await req.db("pk_match_std_tch").update({
+      t_id:req.body.t_code,
+      g_code:req.body.mst_1
+    }).where({t_id:req.body.t_code})
+    let pk_match_std_tch2=await req.db("pk_match_std_tch").update({
+      t_id:req.body.t_code,
+      g_code:req.body.mst_2
+    }).where({t_id:req.body.t_code})
+    let pk_match_std_tch3=await req.db("pk_match_std_tch").update({
+      t_id:req.body.t_code,
+      g_code:req.body.mst_3
+    }).where({t_id:req.body.t_code})
     let log=await req.db("pk_teacher_log").insert({
         t_id:req.body.t_id,
       	t_code:req.body.t_code,

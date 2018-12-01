@@ -3,6 +3,40 @@ const router = express.Router()
 
 module.exports = router
 
+////////////////////////// teacher //////////////////////////////////////
+router.post('/list_teacher', async (req, res) => {
+  try {
+    let rows = await req.db('pk_group').select(
+      "pk_teacher.t_id",
+      "pk_teacher.t_code",
+      "pk_teacher.t_name",
+      "pk_teacher.t_dep",
+      "pk_teacher.t_tel",
+      "pk_teacher.t_username",
+      "pk_teacher.t_password",
+      "pk_teacher.t_status",
+      "pk_department.d_name",
+      "pk_group.g_name",
+      "pk_group.g_code",
+      "pk_group.g_id"
+    )
+
+    .innerJoin('pk_department', 'pk_department.d_code', 'pk_group.d_code')
+    .innerJoin('pk_teacher', 'pk_department.d_code', 'pk_teacher.t_dep')
+    // .innerJoin('pk_match_std_tch', 'pk_teacher.t_code = pk_match_std_tch.t_id AND pk_group.g_code = pk_match_std_tch.g_code')
+    // .rightOuterJoin('pk_match_std_tch','pk_teacher.t_code','pk_match_std_tch.t_id','pk_group.g_code','pk_match_std_tch.g_code')
+    .rightOuterJoin('pk_match_std_tch', function() {
+      this.on('pk_teacher.t_code', '=', 'pk_match_std_tch.t_id').andOn('pk_group.g_code', '=', 'pk_match_std_tch.g_code')
+    })
+    .where("pk_teacher.t_id","=",req.body.t_id)
+    res.send({
+      ok: true,
+      datas: rows,
+    })
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
 
 router.get('/list', async (req, res) => {
   try {
@@ -17,15 +51,18 @@ router.get('/list', async (req, res) => {
     res.send({ ok: false, error: e.message })
   }
 })
-router.get('/cus_select/:select', async (req, res) => {//console.log(req.params.select)
+router.post('/cus_select', async (req, res) => {//console.log(req.params.select)
     try {
-      let rows = await req.db('pk_group').select(req.params.select)
+      let rows = await req.db('pk_group').select("g_code","g_name").where({
+        d_code:req.body.t_dep
+      })
       res.send({
         ok: true,
         datas: rows,
       })
     }catch(e){res.send({ ok: false, error: e.message })}
-  })
+})
+
 
 router.get("/sh_group/:g_id",async(req,res)=>{
   console.log('param='+req.params.g_id)
@@ -129,5 +166,3 @@ router.post('/restore', async (req, res) => {
     res.send({ ok: false,txt:"(-_-') (restore!) ไม่สามารถเรียกคืนข้อมูลได้",alt:"error"})
   }
 })
-
-
