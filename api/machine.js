@@ -96,7 +96,33 @@ router.get("/sh_machine/:mc_id",async(req,res)=>{
     res.send({ok:false,error:e.message})
   }
 })
+////////////////////////// user ////////////////////////////////////
 
+router.post("/sh_machine_w_std",async(req,res)=>{
+  try{
+    let db = req.db
+    let student = await req.db('pk_machine').select(
+      "pk_machine.mc_id",
+      "pk_machine.mc_code",
+      "pk_machine.mc_brand",
+      "pk_machine.mc_series",
+      "pk_machine.std_id",
+      "pk_machine.t_status"
+    )
+    .where("pk_student.std_id","=",req.body.std_id)
+    .innerJoin('pk_student', 'pk_machine.std_id', 'pk_student.std_code')
+  if(student.length!=0){
+      res.send({
+        ok: true,
+        datas: student,
+      })
+    }
+  }catch(e){
+    res.send({ok:false,error:e.message})
+  }
+})
+
+////////////////////////////////////////////////////////////////////
 router.post("/machine_add",async (req,res)=>{
   try{
     let mc_id=await req.db("pk_machine").insert({
