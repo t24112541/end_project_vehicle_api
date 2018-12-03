@@ -17,7 +17,22 @@ router.get('/list', async (req, res) => {
     res.send({ ok: false, error: e.message })
   }
 })
-
+//////////////////////// search ///////////////////////////////
+router.post('/search/', async (req, res) => {
+  try {
+    let rows = await req.db('pk_accessories').select('*').orderBy("pk_accessories.ac_id","desc")
+    .where("t_status","!=",0)
+    .where("ac_name","like",'%'+req.body.txt_search+'%')
+    .orWhere("ac_u_id","like",'%'+req.body.txt_search+'%')
+    res.send({
+      ok: true,
+      datas: rows,
+    })
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
+///////////////////////////////////////////////////////////////
 router.post("/sh_accessories",async(req,res)=>{
   try{
     let db = req.db
@@ -108,7 +123,7 @@ router.post("/sh_accessories_w_std",async(req,res)=>{
       "pk_accessories.t_status"
     )
     .innerJoin('pk_student', 'pk_accessories.ac_u_id', 'pk_student.std_code')
-    .where("pk_student.std_id","=",req.body.std_id)
+    .where("pk_student.std_code","=",req.body.std_id)
     .where("pk_accessories.ac_u_table","=","pk_student")
     .orderBy("pk_accessories.ac_id","desc")
 

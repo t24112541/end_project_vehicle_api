@@ -29,7 +29,9 @@ router.get('/list', async (req, res) => {
     res.send({ ok: false, error: e.message })
   }
 })
+//////////////////////// search ///////////////////////////////
 
+///////////////////////////////////////////////////////////////
 router.post('/sh_missing', async (req, res) => {
   try {
     let machine = await req.db('pk_machine').select(

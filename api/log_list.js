@@ -65,7 +65,7 @@ router.post('/log_group_show', async (req, res) => {
     })
   } catch (e) {
     res.send({ ok: false, error: e.message })
-  }fxgnxvc
+  }
 })
 ////////////////////////////////////////// log teacher ///////////////////////////////////
 router.get('/log_teacher', async (req, res) => {

@@ -15,6 +15,22 @@ router.get('/list', async (req, res) => {
     res.send({ ok: false, error: e.message })
   }
 })
+//////////////////////// search ///////////////////////////////
+router.post('/search/', async (req, res) => {
+  try {
+    let rows = await req.db('pk_machine').select('*').orderBy("mc_id","desc")
+    .where("t_status","!=",0)
+    .where("mc_code","like",'%'+req.body.txt_search+'%')
+    .orWhere("std_id","like",'%'+req.body.txt_search+'%')
+    res.send({
+      ok: true,
+      datas: rows,
+    })
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
+///////////////////////////////////////////////////////////////
 router.get('/cus_select/:select', async (req, res) => {//console.log(req.params.select)
     try {
       let rows = await req.db('pk_machine').select(req.params.select)
@@ -156,7 +172,7 @@ router.post("/machine_add",async (req,res)=>{
       mc_log_work:"เพิ่มข้อมูล"
     })
     res.send({ok:true,txt:"เพิ่มข้อมูล "+req.body.mc_code+" สำเร็จ",alt:"success"})
-  }catch(e){res.send({ok:false,txt:"(-_-') (add!)ไม่สามารถเพิ่มข้อมูลได้",alt:"error"})}
+  }catch(e){res.send({ok:false,txt:"(-_-') (add!)ไม่สามารถเพิ่มข้อมูลได้"+e.message,alt:"error"})}
 })
 
 router.post("/machine_del",async (req,res)=>{//console.log(req.params.mc_id)

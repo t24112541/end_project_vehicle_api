@@ -106,6 +106,23 @@ router.post("/teacher_del",async (req,res)=>{//console.log(req.params.t_id)
     res.send({ok:true,txt:"ลบข้อมูล "+req.body.t_id+" สำเร็จ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถลบข้อมูลได้",alt:"error"})}
 })
+//////////////////////// search ///////////////////////////////
+router.post('/search/', async (req, res) => {
+  try {
+    let rows = await req.db('pk_teacher').select('*').orderBy("pk_teacher.t_id","desc")
+    .where("t_status","!=",0)
+    .where("t_name","like",'%'+req.body.txt_search+'%')
+    .orWhere("t_code","like",'%'+req.body.txt_search+'%')
+    .orWhere("t_dep","like",'%'+req.body.txt_search+'%')
+    res.send({
+      ok: true,
+      datas: rows,
+    })
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
+///////////////////////////////////////////////////////////////
 router.post("/teacher_update",async(req,res)=>{//console.log(req.body.t_id)
   try{
     let sql=await req.db("pk_teacher").update({
@@ -113,7 +130,6 @@ router.post("/teacher_update",async(req,res)=>{//console.log(req.body.t_id)
         t_name:req.body.t_name,
         t_dep:req.body.t_dep,
         t_tel:req.body.t_tel,
-      	t_username:req.body.t_code,
       	t_password:req.body.t_tel
     }).where({
       t_id:req.body.t_id

@@ -88,7 +88,8 @@ router.post("/dep_update",async(req,res)=>{
     	d_code:req.body.d_code,
       d_name:req.body.d_name,
       u_id:req.body.u_id,
-      d_log_work:req.body.type
+      d_log_work:req.body.type,
+      d_log_work:"แก้ไขข้อมูล"
     })
     res.send({ok:true,txt:"แก้ไขข้อมูล "+req.body.d_name+" สำเร็จ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถแก้ไขข้อมูล "+req.body.d_name+" ได้",alt:"error"})}
@@ -130,5 +131,3 @@ router.post('/restore', async (req, res) => {
     res.send({ ok: false,txt:"(-_-') (restore!) ไม่สามารถเรียกคืนข้อมูลได้",alt:"error"})
   }
 })
-
-
