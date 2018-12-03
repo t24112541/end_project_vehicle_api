@@ -5,7 +5,29 @@ module.exports = router
 
 router.get('/list', async (req, res) => {
   try {
-    let rows = await req.db('pk_student').select('*').orderBy("std_code","desc").where("t_status","!=","0")
+    let rows = await req.db('pk_student').select(
+      "pk_group.g_name",
+      "pk_department.d_name",
+      "pk_student.std_id",
+      "pk_student.std_code",
+      "pk_student.std_gender",
+      "pk_student.std_prename",
+      "pk_student.std_name",
+      "pk_student.std_lname",
+      "pk_student.std_pin_id",
+      "pk_student.std_birthday",
+      "pk_student.std_username",
+      "pk_student.std_password",
+      "pk_student.g_code",
+      "pk_student.std_tel",
+      "pk_student.std_blood",
+      "pk_student.t_status",
+      "pk_student.std_tel",
+      "pk_student.std_tel2"
+    )
+    .orderBy("pk_student.std_code","desc").where("pk_student.t_status","!=","0")
+    .innerJoin("pk_group","pk_student.g_code","pk_group.g_code")
+    .innerJoin("pk_department","pk_group.d_code","pk_department.d_code")
     res.send({
       ok: true,
       datas: rows,
@@ -17,10 +39,38 @@ router.get('/list', async (req, res) => {
 //////////////////////// search ///////////////////////////////
 router.post('/search/', async (req, res) => {
   try {
-    let rows = await req.db('pk_student').select('*').orderBy("std_code","desc")
-    .where("t_status","!=",0)
-    .where("std_code","like",'%'+req.body.txt_search+'%')
-    .orWhere("std_name","like",'%'+req.body.txt_search+'%')
+    let rows = await req.db('pk_student').select(
+      "pk_group.g_name",
+      "pk_group.g_code",
+      "pk_department.d_name",
+      "pk_department.d_code",
+      "pk_student.std_id",
+      "pk_student.std_code",
+      "pk_student.std_gender",
+      "pk_student.std_prename",
+      "pk_student.std_name",
+      "pk_student.std_lname",
+      "pk_student.std_pin_id",
+      "pk_student.std_birthday",
+      "pk_student.std_username",
+      "pk_student.std_password",
+      "pk_student.g_code",
+      "pk_student.std_tel",
+      "pk_student.std_blood",
+      "pk_student.t_status",
+      "pk_student.std_tel",
+      "pk_student.std_tel2"
+    )
+    .orderBy("pk_student.std_code","desc")
+    .where("pk_student.t_status","!=",0)
+    .innerJoin("pk_group","pk_student.g_code","pk_group.g_code")
+    .innerJoin("pk_department","pk_group.d_code","pk_department.d_code")
+    .where("pk_student.std_code","like",'%'+req.body.txt_search+'%')
+    .orWhere("pk_student.std_name","like",'%'+req.body.txt_search+'%')
+    .orWhere("pk_group.g_code","like",'%'+req.body.txt_search+'%')
+    .orWhere("pk_group.g_name","like",'%'+req.body.txt_search+'%')
+    .orWhere("pk_department.d_code","like",'%'+req.body.txt_search+'%')
+    .orWhere("pk_department.d_name","like",'%'+req.body.txt_search+'%')
     res.send({
       ok: true,
       datas: rows,
@@ -79,7 +129,9 @@ router.get("/sh_std/:std_id",async(req,res)=>{
       "pk_student.g_code",
       "pk_student.std_blood",
       "pk_student.t_status",
-      "pk_department.d_name"
+      "pk_department.d_name",
+      "pk_student.std_tel",
+      "pk_student.std_tel2"
     )
     .innerJoin('pk_group', 'pk_student.g_code', 'pk_group.g_code')
     .innerJoin('pk_department', 'pk_group.d_code', 'pk_department.d_code')
@@ -106,7 +158,9 @@ router.post("/std_add",async (req,res)=>{
       	std_blood:req.body.std_blood,
       	g_code:req.body.g_code,
       	std_username:req.body.std_code,
-      	std_password:req.body.std_pin_id
+      	std_password:req.body.std_pin_id,
+        std_tel:req.body.std_tel,
+        std_tel2:req.body.std_tel2
     })
     let log=await req.db("pk_student_log").insert({
         std_id:std_id,
@@ -115,6 +169,8 @@ router.post("/std_add",async (req,res)=>{
         std_prename:req.body.std_prename,
         std_name:req.body.std_name,
         std_lname:req.body.std_lname,
+        std_tel:req.body.std_tel,
+        std_tel2:req.body.std_tel2,
         std_pin_id:req.body.std_pin_id,
         std_birthday:req.body.std_birthday,
       	std_blood:req.body.std_blood,
@@ -145,6 +201,8 @@ router.post("/std_del",async (req,res)=>{//console.log(req.params.std_id)
         std_pin_id:req.body.std_pin_id,
         std_birthday:req.body.std_birthday,
       	std_blood:req.body.std_blood,
+        std_tel:req.body.std_tel,
+        std_tel2:req.body.std_tel2,
       	g_code:req.body.g_code,
       	std_username:req.body.std_code,
       	std_password:req.body.std_pin_id,
@@ -165,6 +223,8 @@ router.post("/std_update",async(req,res)=>{//console.log(req.body.std_id)
       std_birthday:req.body.std_birthday,
       std_gender:req.body.std_gender,
       std_blood:req.body.std_blood,
+      std_tel:req.body.std_tel,
+      std_tel2:req.body.std_tel2,
       g_code:req.body.g_code
     }).where({
       std_id:req.body.std_id
@@ -182,6 +242,8 @@ router.post("/std_update",async(req,res)=>{//console.log(req.body.std_id)
       	g_code:req.body.g_code,
       	std_username:req.body.std_code,
       	std_password:req.body.std_pin_id,
+        std_tel:req.body.std_tel,
+        std_tel2:req.body.std_tel2,
         std_log_work:"แก้ไขข้อมูล",
         u_id:req.body.u_id
     })
@@ -205,6 +267,8 @@ router.post('/restore', async (req, res) => {
       std_password:rows[0].std_password,
       g_code:rows[0].g_code,
       std_blood:rows[0].std_blood,
+      std_tel:rows[0].std_tel,
+      std_tel2:rows[0].std_tel2
     }).where({std_id:rows[0].std_id})
     let log=await req.db(req.body.data).insert({
       std_id:rows[0].std_id,
@@ -220,7 +284,9 @@ router.post('/restore', async (req, res) => {
       std_username:rows[0].std_code,
       std_password:rows[0].std_pin_id,
       std_log_work:"เรียกคืนข้อมูล",
-      u_id:rows[0].u_id
+      u_id:rows[0].u_id,
+      std_tel:rows[0].std_tel,
+      std_tel2:rows[0].std_tel2
     })
     res.send({
       ok:true,txt:"เรียกคืนข้อมูล "+rows[0].t_name+" สำเร็จ",alt:"success"
