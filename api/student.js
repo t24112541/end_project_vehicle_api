@@ -14,6 +14,36 @@ router.get('/list', async (req, res) => {
     res.send({ ok: false, error: e.message })
   }
 })
+//////////////////////// search ///////////////////////////////
+router.post('/search/', async (req, res) => {
+  try {
+    let rows = await req.db('pk_student').select('*').orderBy("std_code","desc")
+    .where("t_status","!=",0)
+    .where("std_code","like",'%'+req.body.txt_search+'%')
+    .orWhere("std_name","like",'%'+req.body.txt_search+'%')
+    res.send({
+      ok: true,
+      datas: rows,
+    })
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
+///////////////////////////////////////////////////////////////
+////////////////////// select std_id ////////////////////////
+router.post('/std_id', async (req, res) => {
+  try {
+    let rows = await req.db('pk_student').select('*').where("t_status","!=","0")
+    .where("std_code","like",'%'+req.body.std_code+'%')
+    res.send({
+      ok: true,
+      datas: rows,
+    })
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
+/////////////////////////////////////////////////////////////
 router.get('/list_g/:g_code', async (req, res) => {
   try {
     let rows = await req.db('pk_student').select('*')
@@ -34,9 +64,26 @@ router.get("/sh_std/:std_id",async(req,res)=>{
   console.log('param='+req.params.std_id)
   try{
     let db = req.db
-    let row = await req.db('pk_student').select('*').where({
-      std_id: req.params.std_id
-    })
+    let row = await req.db('pk_student').select(
+      "pk_group.g_name",
+      "pk_student.std_id",
+      "pk_student.std_code",
+      "pk_student.std_gender",
+      "pk_student.std_prename",
+      "pk_student.std_name",
+      "pk_student.std_lname",
+      "pk_student.std_pin_id",
+      "pk_student.std_birthday",
+      "pk_student.std_username",
+      "pk_student.std_password",
+      "pk_student.g_code",
+      "pk_student.std_blood",
+      "pk_student.t_status",
+      "pk_department.d_name"
+    )
+    .innerJoin('pk_group', 'pk_student.g_code', 'pk_group.g_code')
+    .innerJoin('pk_department', 'pk_group.d_code', 'pk_department.d_code')
+    .where("pk_student.std_id","=",req.params.std_id)
     res.send({
       ok:true,
       datas: row[0] || {},
