@@ -3,8 +3,9 @@ const router = express.Router()
 
 module.exports = router
 
-router.get('/list', async (req, res) => {
+router.post('/list', async (req, res) => {
   try {
+    let db=req.db
     let missing = await req.db('pk_missing').select(
 
       "pk_missing.ms_id",
@@ -16,13 +17,18 @@ router.get('/list', async (req, res) => {
       "pk_missing.u_ms_date",
       "pk_missing.ms_status"
     )
+    .where("ms_table","=",req.body.cv_filter)
     .orderBy("pk_missing.ms_id","desc")
-
-
+    let stp1=await db('pk_missing').count('ms_id as count').where("ms_status","ขั้นที่ 1 รอรับเรื่อง").where("ms_table","=",req.body.cv_filter)
+    let stp2=await db('pk_missing').count('ms_id as count').where("ms_status","ขั้นที่ 2 รับเรื่องแล้ว").where("ms_table","=",req.body.cv_filter)
+    let stp3=await db('pk_missing').count('ms_id as count').where("ms_status","ขั้นที่ 3 พบเเล้ว").where("ms_table","=",req.body.cv_filter)
 
       res.send({
         ok: true,
         datas: missing,
+        stp1,
+        stp2,
+        stp3,
       })
 
   } catch (e) {

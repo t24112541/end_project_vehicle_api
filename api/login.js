@@ -4,7 +4,7 @@ const router = express.Router()
 module.exports = router
 
 router.post('/', async (req, res) => {
-
+console.log("login")
   let std = await req.db('pk_student')
     .where('std_username', '=', req.body.username || '')
     .where('std_password', '=', req.body.password || '')
