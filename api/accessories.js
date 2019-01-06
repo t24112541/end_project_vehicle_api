@@ -21,9 +21,11 @@ router.get('/list', async (req, res) => {
 router.post('/search/', async (req, res) => {
   try {
     let rows = await req.db('pk_accessories').select('*').orderBy("pk_accessories.ac_id","desc")
-    .where("t_status","!=",0)
+
     .where("ac_name","like",'%'+req.body.txt_search+'%')
     .orWhere("ac_u_id","like",'%'+req.body.txt_search+'%')
+    .andWhere("t_status","!=",0)
+
     res.send({
       ok: true,
       datas: rows,

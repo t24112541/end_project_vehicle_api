@@ -51,7 +51,4 @@ router.post("/security_update",async(req,res)=>{
     }
     res.send({ok:true,txt:"อัพเดทข้อมูลแล้ว",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถอัพเดทข้อมูลได้",alt:"error"})}
-
-
-
 })

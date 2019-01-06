@@ -295,3 +295,45 @@ router.post('/restore', async (req, res) => {
     res.send({ ok: false,txt:"(-_-') (restore!) ไม่สามารถเรียกคืนข้อมูลได้",alt:"error"})
   }
 })
+
+router.post('/sh_profile', async (req, res) => {
+  try {
+    let rows = await req.db('pk_student').select('*').where("std_id","=",req.body.id)
+    res.send({
+      ok: true,
+      datas: rows,
+    })
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
+
+router.post("/profile_update",async(req,res)=>{
+  try{
+    let sql=await req.db("pk_student").update({
+        std_name:req.body.std_name,
+        std_lname:req.body.std_lname,
+        std_tel:req.body.std_tel,
+        std_tel2:req.body.std_tel2,
+    }).where({
+      std_id:req.body.id
+    })
+    res.send({ok:true,txt:"อัพเดทข้อมูลแล้ว",alt:"success"})
+  }catch(e){res.send({ok:false,txt:"ไม่สามารถอัพเดทข้อมูลได้",alt:"error"})}
+})
+
+router.post("/security_update",async(req,res)=>{
+  try{
+    if(req.body.cv_set==="username"){
+        let sql=await req.db("pk_student").update({
+            std_username:req.body.std_username
+        }).where({std_id:req.body.std_id})
+    }
+    else if(req.body.cv_set==="password"){
+        let sql=await req.db("pk_student").update({
+            std_password:req.body.std_password
+        }).where({std_id:req.body.std_id})
+    }
+    res.send({ok:true,txt:"อัพเดทข้อมูลแล้ว",alt:"success"})
+  }catch(e){res.send({ok:false,txt:"ไม่สามารถอัพเดทข้อมูลได้",alt:"error"})}
+})
