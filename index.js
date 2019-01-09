@@ -2,6 +2,8 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const config = require('./config')
 const socket = require('./lib/socket')
+const multer = require('multer')
+const upload = multer({ dest: './public/img' })
 
 const app = express()
 
@@ -10,7 +12,7 @@ app.use(compression({
   filter: (req, res) => (!req.headers['x-no-compression'] && compression.filter(req, res)) || false,
 }))
 
-app.use(express.static('public'))
+app.use(express.static('./public'))
 
 app.use((req, res, next) => {
   var header = { 'Access-Control-Allow-Origin': '*' }
@@ -37,7 +39,13 @@ app.use((req, res, next) => {
   next()
 })
 
+app.use((req,res,next)=>{
+  req.cv_dir=__dirname
+  next()
+})
+
 app.use('/api', require('./api'))
+
 
 app.listen(config.port, () => {
   console.log('ready', config.port)

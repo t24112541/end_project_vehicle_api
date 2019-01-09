@@ -3,6 +3,12 @@ const router = express.Router()
 
 module.exports = router
 
+router.post('/cv',async(req,res)=>{console.log("OK");
+  let filePath ='/img/machine/veh-1546874319889.jpg'
+  //   // console.log(filePath);
+  res.sendFile(filePath)
+  // res.send({filePath:filePath})
+})
 router.post('/sh_profile', async (req, res) => {
   try {
     let rows = await req.db('pk_admin').select('*').where("a_id","=",req.body.id)
