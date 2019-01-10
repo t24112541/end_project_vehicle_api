@@ -166,21 +166,14 @@ router.post("/machine_add",upload.any(),async (req,res,next)=>{
             mc_series:req.body.mc_series,
             std_id:req.body.std_id,
         })
-        let img_font=await req.db("pk_img").insert({
-          	img_img:req.files[0].filename,
-            u_table:req.body.u_table,
-            u_code:mc_id,
-        })
-        let img_side=await req.db("pk_img").insert({
-          	img_img:req.files[1].filename,
-            u_table:req.body.u_table,
-            u_code:mc_id,
-        })
-        let img_rear=await req.db("pk_img").insert({
-          	img_img:req.files[2].filename,
-            u_table:req.body.u_table,
-            u_code:mc_id,
-        })
+
+        for(let i=0;i<req.files.length;i++){
+          let img=await req.db("pk_img").insert({
+              img_img:req.files[i].filename,
+              u_table:req.body.u_table,
+              u_code:mc_id,
+          })
+        }
         let log=await req.db("pk_machine_log").insert({
           mc_id:mc_id,
           mc_code:req.body.mc_code,
@@ -212,7 +205,9 @@ router.post("/machine_del",async (req,res)=>{//console.log(req.params.mc_id)
     res.send({ok:true,txt:"ลบข้อมูล "+req.body.mc_id+" สำเร็จ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"(-_-') (del!)ไม่สามารถลบข้อมูลได้",alt:"error"})}
 })
-router.post("/machine_update",upload.any(),async(req,res,next)=>{//console.log(req.body.mc_id)
+router.post("/machine_update",upload.any(),async(req,res,next)=>{
+
+
   try{
     let sql=await req.db("pk_machine").update({
         mc_code:req.body.mc_code,
@@ -221,17 +216,14 @@ router.post("/machine_update",upload.any(),async(req,res,next)=>{//console.log(r
     }).where({
       mc_id:req.body.mc_id
     })
-    let img_font=await req.db("pk_img").update({
-      	img_img:req.body.img_font,
-    }).where("img_id","=",req.body.img_font_id)
-
-    let img_side=await req.db("pk_img").update({
-      	img_img:req.body.img_side,
-    }).where("img_id","=",req.body.img_side_id)
-
-    let img_rear=await req.db("pk_img").update({
-      	img_img:req.body.img_rear,
-    }).where("img_id","=",req.body.img_rear_id)
+    for(let i=0;i<req.files.length;i++){
+      var cv_str=req.files[i].fieldname
+      var sp=cv_str.split("-")
+      let sel=sp[1]
+      let img=await req.db("pk_img").update({
+        	img_img:req.files[i].filename,
+      }).where("img_id","=",sel)
+    }
 
     let log=await req.db("pk_machine_log").insert({
       mc_id:req.body.mc_id,
