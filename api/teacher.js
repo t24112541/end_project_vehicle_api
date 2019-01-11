@@ -47,7 +47,19 @@ router.get("/sh_teacher/:t_id",async(req,res)=>{
     res.send({ok:false,error:e.message})
   }
 })
-
+////////////////////////////  select t_id ///////////////////////////////
+router.post('/t_id', async (req, res) => {
+  try {
+    let rows = await req.db('pk_teacher').select('*').where("t_status","!=","0")
+    .where("t_code","like",'%'+req.body.t_code+'%')
+    res.send({
+      ok: true,
+      datas: rows,
+    })
+  } catch (e) {
+    res.send({ ok: false, error: e.message })
+  }
+})
 router.post("/teacher_add",async (req,res)=>{
   try{
     let t_id=await req.db("pk_teacher").insert({

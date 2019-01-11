@@ -1,6 +1,17 @@
 const express = require('express')
 const router = express.Router()
+const multer = require('multer')
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './public/img/accessories')
+  },
+  filename: function (req, file, cb) {
+    cb(null, "veh-ac" + '-' + Date.now()+".jpg")
+  }
+})
+
+const upload = multer({ storage: storage })
 module.exports = router
 
 
@@ -93,8 +104,8 @@ router.post("/sh_accessories",async(req,res)=>{
     .where("pk_accessories.ac_id","=",req.body.ac_id)
     .where("pk_accessories.ac_u_table","=","pk_teacher")
 
-    // console.log(student.length)
-    // console.log(teacher.length)
+    console.log(student.length)
+    console.log(teacher.length)
     if(student.length!=0){
       res.send({
         ok: true,
@@ -141,7 +152,7 @@ router.post("/sh_accessories_w_std",async(req,res)=>{
 })
 /////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////   26/11/61
-router.post("/accessories_add",async (req,res)=>{
+router.post("/accessories_add",upload.any(),async (req,res,next)=>{
   try{
     let ac_id=await req.db("pk_accessories").insert({
       	ac_name:req.body.ac_name,
@@ -149,21 +160,13 @@ router.post("/accessories_add",async (req,res)=>{
         ac_u_id:req.body.ac_u_id,
         ac_u_table:req.body.ac_u_table,
     })
-    let img_font=await req.db("pk_img").insert({
-      img_img:req.body.img_font,
-      u_table:req.body.u_table,
-      u_code:ac_id,
-    })
-    let img_side=await req.db("pk_img").insert({
-        img_img:req.body.img_side,
-        u_table:req.body.u_table,
-        u_code:ac_id,
-    })
-    let img_rear=await req.db("pk_img").insert({
-        img_img:req.body.img_rear,
-        u_table:req.body.u_table,
-        u_code:ac_id,
-    })
+    for(let i=0;i<req.files.length;i++){
+      let img=await req.db("pk_img").insert({
+        	img_img:req.files[i].filename,
+          u_table:req.body.u_table,
+          u_code:ac_id,
+      })
+    }
     let log=await req.db("pk_accessories_log").insert({
         ac_id:ac_id,
         ac_name:req.body.ac_name,
@@ -194,7 +197,7 @@ router.post("/accessories_del",async (req,res)=>{
     res.send({ok:true,txt:"ลบข้อมูล "+req.body.d_id+" สำเร็จ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"(-_-') (del!)ไม่สามารถลบข้อมูลได้",alt:"error"})}
 })
-router.post("/accessories_update",async(req,res)=>{
+router.post("/accessories_update",upload.any(),async(req,res,next)=>{
   try{
     let sql=await req.db("pk_accessories").update({
       ac_name:req.body.ac_name,
@@ -205,17 +208,14 @@ router.post("/accessories_update",async(req,res)=>{
       ac_id:req.body.ac_id
     })
 
-    let img_font=await req.db("pk_img").update({
-      	img_img:req.body.img_font,
-    }).where("img_id","=",req.body.img_font_id)
-
-    let img_side=await req.db("pk_img").update({
-      	img_img:req.body.img_side,
-    }).where("img_id","=",req.body.img_side_id)
-
-    let img_rear=await req.db("pk_img").update({
-      	img_img:req.body.img_rear,
-    }).where("img_id","=",req.body.img_rear_id)
+    for(let i=0;i<req.files.length;i++){
+      var cv_str=req.files[i].fieldname
+      var sp=cv_str.split("-")
+      let sel=sp[1]
+      let img=await req.db("pk_img").update({
+        	img_img:req.files[i].filename,
+      }).where("img_id","=",sel)
+    }
 
     let log=await req.db("pk_accessories_log").insert({
       ac_id:req.body.ac_id,
