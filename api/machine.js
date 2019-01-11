@@ -1,5 +1,18 @@
 const express = require('express')
 const router = express.Router()
+const multer = require('multer')
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './public/img/machine')
+  },
+  filename: function (req, file, cb) {
+    cb(null, "veh-mc" + '-' + Date.now()+".jpg")
+  }
+})
+
+const upload = multer({ storage: storage })
+const cv_upload=multer({ storage: storage }).any()
 module.exports = router
 
 
@@ -99,11 +112,13 @@ router.get("/sh_machine/:mc_id",async(req,res)=>{
 
     if(teacher.length!=0){
       res.send({
+        cv_dir:req.cv_dir ,
         ok: true,
         datas: teacher,
       })
     }else if(student.length!=0){
       res.send({
+        cv_dir:req.cv_dir ,
         ok: true,
         datas: student,
       })
@@ -139,40 +154,38 @@ router.post("/sh_machine_w_std",async(req,res)=>{
 })
 
 ////////////////////////////////////////////////////////////////////
-router.post("/machine_add",async (req,res)=>{
-  try{
-    let mc_id=await req.db("pk_machine").insert({
-      	mc_code:req.body.mc_code,
-        mc_brand:req.body.mc_brand,
-        mc_series:req.body.mc_series,
-        std_id:req.body.std_id,
-    })
-    let img_font=await req.db("pk_img").insert({
-      	img_img:req.body.img_font,
-        u_table:req.body.u_table,
-        u_code:mc_id,
-    })
-    let img_side=await req.db("pk_img").insert({
-      	img_img:req.body.img_side,
-        u_table:req.body.u_table,
-        u_code:mc_id,
-    })
-    let img_rear=await req.db("pk_img").insert({
-      	img_img:req.body.img_rear,
-        u_table:req.body.u_table,
-        u_code:mc_id,
-    })
-    let log=await req.db("pk_machine_log").insert({
-      mc_id:mc_id,
-      mc_code:req.body.mc_code,
-      mc_brand:req.body.mc_brand,
-      mc_series:req.body.mc_series,
-      std_id:req.body.std_id,
-      u_id:req.body.u_id,
-      mc_log_work:"เพิ่มข้อมูล"
-    })
-    res.send({ok:true,txt:"เพิ่มข้อมูล "+req.body.mc_code+" สำเร็จ",alt:"success"})
-  }catch(e){res.send({ok:false,txt:"(-_-') (add!)ไม่สามารถเพิ่มข้อมูลได้"+e.message,alt:"error"})}
+router.post("/machine_add",upload.any(),async (req,res,next)=>{
+  let db = req.db
+  let chk_mc_code=await db("pk_machine").select("mc_code").where("pk_machine.mc_code","=",req.body.mc_code)
+  if(chk_mc_code.length>0){res.send({ok:false,txt:"(-_-#) (add!)ไม่สามารถเพิ่มข้อมูลได้ พบทะเบียนรถ "+req.body.mc_code+" ที่ตรงกัน",alt:"warning"})}
+  else{
+    try{
+        let mc_id=await req.db("pk_machine").insert({
+          	mc_code:req.body.mc_code,
+            mc_brand:req.body.mc_brand,
+            mc_series:req.body.mc_series,
+            std_id:req.body.std_id,
+        })
+
+        for(let i=0;i<req.files.length;i++){
+          let img=await req.db("pk_img").insert({
+              img_img:req.files[i].filename,
+              u_table:req.body.u_table,
+              u_code:mc_id,
+          })
+        }
+        let log=await req.db("pk_machine_log").insert({
+          mc_id:mc_id,
+          mc_code:req.body.mc_code,
+          mc_brand:req.body.mc_brand,
+          mc_series:req.body.mc_series,
+          std_id:req.body.std_id,
+          u_id:req.body.u_id,
+          mc_log_work:"เพิ่มข้อมูล"
+        })
+      res.send({ok:true,txt:"เพิ่มข้อมูล "+req.body.mc_code+" สำเร็จ",alt:"success"})
+    }catch(e){res.send({ok:false,txt:"(-_-') (add!)ไม่สามารถเพิ่มข้อมูลได้"+e.message,alt:"error"})}
+  }
 })
 
 router.post("/machine_del",async (req,res)=>{//console.log(req.params.mc_id)
@@ -192,7 +205,9 @@ router.post("/machine_del",async (req,res)=>{//console.log(req.params.mc_id)
     res.send({ok:true,txt:"ลบข้อมูล "+req.body.mc_id+" สำเร็จ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"(-_-') (del!)ไม่สามารถลบข้อมูลได้",alt:"error"})}
 })
-router.post("/machine_update",async(req,res)=>{//console.log(req.body.mc_id)
+router.post("/machine_update",upload.any(),async(req,res,next)=>{
+
+
   try{
     let sql=await req.db("pk_machine").update({
         mc_code:req.body.mc_code,
@@ -201,17 +216,14 @@ router.post("/machine_update",async(req,res)=>{//console.log(req.body.mc_id)
     }).where({
       mc_id:req.body.mc_id
     })
-    let img_font=await req.db("pk_img").update({
-      	img_img:req.body.img_font,
-    }).where("img_id","=",req.body.img_font_id)
-
-    let img_side=await req.db("pk_img").update({
-      	img_img:req.body.img_side,
-    }).where("img_id","=",req.body.img_side_id)
-
-    let img_rear=await req.db("pk_img").update({
-      	img_img:req.body.img_rear,
-    }).where("img_id","=",req.body.img_rear_id)
+    for(let i=0;i<req.files.length;i++){
+      var cv_str=req.files[i].fieldname
+      var sp=cv_str.split("-")
+      let sel=sp[1]
+      let img=await req.db("pk_img").update({
+        	img_img:req.files[i].filename,
+      }).where("img_id","=",sel)
+    }
 
     let log=await req.db("pk_machine_log").insert({
       mc_id:req.body.mc_id,
