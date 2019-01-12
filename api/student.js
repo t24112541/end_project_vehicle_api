@@ -1,5 +1,17 @@
 const express = require('express')
 const router = express.Router()
+const multer = require('multer')
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './public/img/users')
+  },
+  filename: function (req, file, cb) {
+    cb(null, "veh-u" + '-' + Date.now()+".jpg")
+  }
+})
+
+const upload = multer({ storage: storage })
 
 module.exports = router
 
@@ -136,16 +148,20 @@ router.get("/sh_std/:std_id",async(req,res)=>{
     .innerJoin('pk_group', 'pk_student.g_code', 'pk_group.g_code')
     .innerJoin('pk_department', 'pk_group.d_code', 'pk_department.d_code')
     .where("pk_student.std_id","=",req.params.std_id)
+
+    let img=await db("pk_img").select("*").where("u_code",req.params.std_id).where("u_table","pk_student")
+
     res.send({
       ok:true,
       datas: row[0] || {},
+      img,
     })
   }catch(e){
     res.send({ok:false,error:e.message})
   }
 })
 
-router.post("/std_add",async (req,res)=>{
+router.post("/std_add",upload.any(),async (req,res)=>{
   try{
     let std_id=await req.db("pk_student").insert({
       	std_code:req.body.std_code,
@@ -162,6 +178,23 @@ router.post("/std_add",async (req,res)=>{
         std_tel:req.body.std_tel,
         std_tel2:req.body.std_tel2
     })
+    if(req.files.length==0){
+      let img=await req.db("pk_img").insert({
+          img_img:"veh-u-default.jpg",
+          u_table:req.body.u_table,
+          u_code:std_id,
+      })
+    }
+    else{
+      for(let i=0;i<req.files.length;i++){
+        let img=await req.db("pk_img").insert({
+            img_img:req.files[i].filename,
+            u_table:req.body.u_table,
+            u_code:std_id,
+        })
+      }
+    }
+
     let log=await req.db("pk_student_log").insert({
         std_id:std_id,
       	std_code:req.body.std_code,
@@ -212,7 +245,7 @@ router.post("/std_del",async (req,res)=>{//console.log(req.params.std_id)
     res.send({ok:true,txt:"ลบข้อมูล "+req.body.std_id+" สำเร็จ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถลบข้อมูลได้",alt:"error"})}
 })
-router.post("/std_update",async(req,res)=>{//console.log(req.body.std_id)
+router.post("/std_update",upload.any(),async(req,res)=>{//console.log(req.body.std_id)
   try{
     let sql=await req.db("pk_student").update({
       std_code:req.body.std_code,
@@ -229,6 +262,14 @@ router.post("/std_update",async(req,res)=>{//console.log(req.body.std_id)
     }).where({
       std_id:req.body.std_id
     })
+    for(let i=0;i<req.files.length;i++){
+      var cv_str=req.files[i].fieldname
+      var sp=cv_str.split("-")
+      let sel=sp[1]
+      let img=await req.db("pk_img").update({
+        	img_img:req.files[i].filename,
+      }).where("img_id","=",sel)
+    }
     let log=await req.db("pk_student_log").insert({
         std_id:req.body.std_id,
       	std_code:req.body.std_code,
