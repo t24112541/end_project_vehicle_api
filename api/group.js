@@ -71,6 +71,8 @@ router.get("/sh_group/:g_id",async(req,res)=>{
     let row = await req.db('pk_group').select('*').where({
       g_id: req.params.g_id
     })
+    .innerJoin('pk_department', 'pk_group.d_code', 'pk_department.d_code')
+
     let num_rows=await req.db("pk_group")
     .innerJoin('pk_student', 'pk_group.g_code', 'pk_student.g_code')
     .count("std_id as count")
@@ -125,7 +127,6 @@ router.post("/group_update",async(req,res)=>{//console.log(req.body.g_id)
     let sql=await req.db("pk_group").update({
       g_code:req.body.g_code,
       g_name:req.body.g_name,
-      d_code:req.body.d_code,
     }).where({
       g_id:req.body.g_id
     })
@@ -133,7 +134,6 @@ router.post("/group_update",async(req,res)=>{//console.log(req.body.g_id)
       g_id:req.body.g_id,
     	g_code:req.body.g_code,
       g_name:req.body.g_name,
-      d_code:req.body.d_code,
       u_id:req.body.u_id,
       g_log_work:"แก้ไขข้อมูล",
     })
