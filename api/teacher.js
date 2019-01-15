@@ -154,7 +154,7 @@ router.post('/search/', async (req, res) => {
     .where("t_status","!=",0)
     .where("t_name","like",'%'+req.body.txt_search+'%')
     .orWhere("t_code","like",'%'+req.body.txt_search+'%')
-    .orWhere("t_dep","like",'%'+req.body.txt_search+'%')
+    
     res.send({
       ok: true,
       datas: rows,

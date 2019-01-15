@@ -37,7 +37,22 @@ router.post('/list_teacher', async (req, res) => {
     res.send({ ok: false, error: e.message })
   }
 })
-
+/////////////////////////////////// search ////////////////////////////////
+router.post("/search",async(req,res)=>{
+  try{
+    let db=req.db
+    let rows = await req.db('pk_group').select('*').orderBy("pk_group.g_code","desc")
+    .where("pk_group.t_status","!=",0)
+    .innerJoin("pk_department","pk_group.d_code","pk_department.d_code")
+    .where("pk_group.g_code","like",'%'+req.body.txt_search+'%')
+    .orWhere("pk_group.g_name","like",'%'+req.body.txt_search+'%')
+    .orWhere("pk_department.d_name","like",'%'+req.body.txt_search+'%')
+    res.send({
+      ok: true,
+      datas: rows,
+    })
+  }catch(e){res.send({ ok: false, error: e.message })}
+})
 router.get('/list', async (req, res) => {
   try {
     let rows = await req.db('pk_group').select('*').orderBy("pk_group.g_code","desc")
