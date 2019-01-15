@@ -80,16 +80,17 @@ router.get("/sh_machine/:mc_id",async(req,res)=>{
       "pk_img.img_id",
       "pk_img.img_img",
       "pk_img.u_code",
-      "pk_img.u_table"
+      "pk_img.u_table",
+      "pk_machine.mc_u_table"
     ).where("pk_machine.mc_id","=",req.params.mc_id
     )
     .innerJoin('pk_machine', 'pk_machine.std_id', 'pk_student.std_code')
     .innerJoin('pk_img', 'pk_machine.mc_id', 'pk_img.u_code')
 
     let teacher = await req.db('pk_teacher').select(
-      "pk_teacher.t_id",
+      "pk_teacher.t_id as std_code",
       "pk_teacher.t_code",
-      "pk_teacher.t_name",
+      "pk_teacher.t_name as std_name",
       "pk_teacher.t_dep",
       "pk_teacher.t_tel",
       "pk_teacher.t_username",
@@ -104,12 +105,15 @@ router.get("/sh_machine/:mc_id",async(req,res)=>{
       "pk_img.img_id",
       "pk_img.img_img",
       "pk_img.u_code",
-      "pk_img.u_table"
+      "pk_img.u_table",
+      "pk_machine.mc_u_table"
 
     ).where("pk_machine.mc_id","=",req.params.mc_id)
     .innerJoin('pk_machine', 'pk_teacher.t_code', 'pk_machine.std_id')
     .innerJoin('pk_img', 'pk_machine.mc_id', 'pk_img.u_code')
 
+    console.log(teacher.length)
+    console.log(student.length)
     if(teacher.length!=0){
       res.send({
         cv_dir:req.cv_dir ,
@@ -165,6 +169,7 @@ router.post("/machine_add",upload.any(),async (req,res,next)=>{
             mc_brand:req.body.mc_brand,
             mc_series:req.body.mc_series,
             std_id:req.body.std_id,
+            mc_u_table:req.body.mc_u_table
         })
 
         for(let i=0;i<req.files.length;i++){
