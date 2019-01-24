@@ -23,12 +23,11 @@ router.post('/list_teacher', async (req, res) => {
 
     .innerJoin('pk_department', 'pk_department.d_code', 'pk_group.d_code')
     .innerJoin('pk_teacher', 'pk_department.d_code', 'pk_teacher.t_dep')
-    // .innerJoin('pk_match_std_tch', 'pk_teacher.t_code = pk_match_std_tch.t_id AND pk_group.g_code = pk_match_std_tch.g_code')
-    // .rightOuterJoin('pk_match_std_tch','pk_teacher.t_code','pk_match_std_tch.t_id','pk_group.g_code','pk_match_std_tch.g_code')
     .rightOuterJoin('pk_match_std_tch', function() {
-      this.on('pk_teacher.t_code', '=', 'pk_match_std_tch.t_id').andOn('pk_group.g_code', '=', 'pk_match_std_tch.g_code')
+      this.on('pk_teacher.t_id', '=', 'pk_match_std_tch.t_id').andOn('pk_group.g_code', '=', 'pk_match_std_tch.g_code')
     })
     .where("pk_teacher.t_id","=",req.body.t_id)
+    console.log(rows)
     res.send({
       ok: true,
       datas: rows,
