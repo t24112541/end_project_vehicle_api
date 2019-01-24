@@ -1,6 +1,17 @@
 const express = require('express')
 const router = express.Router()
+const multer = require('multer')
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './public/img/missing')
+  },
+  filename: function (req, file, cb) {
+    cb(null, "veh-ms" + '-' + Date.now()+".jpg")
+  }
+})
+
+const upload = multer({ storage: storage })
 module.exports = router
 
 router.post('/list', async (req, res) => {
@@ -43,12 +54,6 @@ router.post('/list', async (req, res) => {
 router.post('/sh_missing', async (req, res) => {
   try {
     let machine = await req.db('pk_machine').select(
-      "pk_machine.mc_id",
-      "pk_machine.mc_code as ms_name",
-      "pk_machine.mc_brand",
-      "pk_machine.mc_series",
-      "pk_machine.std_id",
-      "pk_machine.t_status",
       "pk_missing.ms_id",
       "pk_missing.ms_u_id",
       "pk_missing.ms_u_table",
@@ -56,11 +61,22 @@ router.post('/sh_missing', async (req, res) => {
       "pk_missing.ms_table",
       "pk_missing.ms_date",
       "pk_missing.u_ms_date",
-      "pk_missing.ms_status"
+      "pk_missing.ms_status",
+      "pk_missing.ms_detail",
+      "pk_machine.mc_id",
+      "pk_machine.mc_code as ms_name",
+      "pk_machine.mc_brand",
+      "pk_machine.mc_series",
+      "pk_machine.std_id",
+      "pk_machine.t_status",
+      "pk_machine.mc_u_table",
+      "pk_img.img_img"
     )
     .innerJoin('pk_missing', 'pk_machine.mc_id', 'pk_missing.u_id')
+    .innerJoin("pk_img","pk_missing.ms_id","pk_img.u_code")
     .orderBy("pk_missing.ms_id","desc")
     .where("pk_missing.ms_id","=",req.body.ms_id)
+    .where("pk_img.u_table","pk_missing")
 
     let accessories = await req.db('pk_accessories').select(
       "pk_accessories.ac_id",
@@ -76,11 +92,18 @@ router.post('/sh_missing', async (req, res) => {
       "pk_missing.ms_table",
       "pk_missing.ms_date",
       "pk_missing.u_ms_date",
-      "pk_missing.ms_status"
+      "pk_missing.ms_status",
+      "pk_img.img_img",
+      "pk_missing.ms_detail",
     )
     .innerJoin('pk_missing', 'pk_accessories.ac_id', 'pk_missing.u_id')
+    .innerJoin("pk_img","pk_missing.ms_id","pk_img.u_code")
     .orderBy("pk_missing.ms_id","desc")
     .where("pk_missing.ms_id","=",req.body.ms_id)
+    .where("pk_img.u_table","pk_missing")
+
+    console.log(machine)
+    console.log(accessories)
     if(machine.length==1){
       res.send({
         ok: true,
@@ -161,7 +184,7 @@ try {
 
 ////////////////////////////////////////////////////////////////////
 
-router.post('/missing', async (req, res) => {
+router.post('/missing',upload.any(),async (req, res) => {
   try {
     let rows = await req.db('pk_missing').insert({
       u_id:req.body.u_id,
@@ -169,7 +192,24 @@ router.post('/missing', async (req, res) => {
       ms_u_id:req.body.ms_u_id,
       ms_u_table:req.body.ms_u_table,
       ms_status:req.body.ms_status,
+      ms_detail:req.body.ms_detail,
     })
+    if(req.files.length==0){
+      let img=await req.db("pk_img").insert({
+          img_img:"veh-u-default.jpg",
+          u_table:"pk_missing",
+          u_code:rows,
+      })
+    }
+    else{
+      for(let i=0;i<req.files.length;i++){
+        let img=await req.db("pk_img").insert({
+            img_img:req.files[i].filename,
+            u_table:"pk_missing",
+            u_code:rows,
+        })
+      }
+    }
 
     res.send({ok:true,txt:"ทำการแจ้งหายเเล้ว",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถทำการแจ้งหายได้"+e.message,alt:"error"})}

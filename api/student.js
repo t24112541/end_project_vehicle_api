@@ -106,19 +106,61 @@ router.post('/std_id', async (req, res) => {
   }
 })
 /////////////////////////////////////////////////////////////
-router.get('/list_g/:g_code', async (req, res) => {
-  try {
-    let rows = await req.db('pk_student').select('*')
-    .where({
-      g_code:req.params.g_code
-    })
-    .orderBy("std_code","desc")
-    res.send({
-      ok: true,
-      datas: rows,
-    })
-  } catch (e) {
-    res.send({ ok: false, error: e.message })
+router.post('/list_g', async (req, res) => {
+  console.log(req.body.g_code)
+  console.log(req.body.txt_search)
+  if(req.body.txt_search!="txt_search"){
+    try {
+      let rows = await req.db('pk_student').select(
+        "pk_group.g_name",
+        "pk_group.g_code",
+        "pk_student.std_id",
+        "pk_student.std_code",
+        "pk_student.std_gender",
+        "pk_student.std_prename",
+        "pk_student.std_name",
+        "pk_student.std_lname",
+        "pk_student.std_pin_id",
+        "pk_student.std_birthday",
+        "pk_student.std_username",
+        "pk_student.std_password",
+        "pk_student.g_code",
+        "pk_student.std_tel",
+        "pk_student.std_blood",
+        "pk_student.t_status",
+        "pk_student.std_tel",
+        "pk_student.std_tel2"
+      )
+      .orderBy("pk_student.std_code","desc")
+      .where("pk_student.t_status","!=",0)
+      .where("pk_student.g_code","=",req.body.g_code)
+      .innerJoin("pk_group","pk_student.g_code","pk_group.g_code")
+      .where("pk_student.std_code","like",'%'+req.body.txt_search+'%')
+      .orWhere("pk_student.std_name","like",'%'+req.body.txt_search+'%')
+
+      console.log(rows)
+      res.send({
+        ok: true,
+        datas: rows,
+      })
+    } catch (e) {
+      res.send({ ok: false, error: e.message })
+    }
+  }else{
+    try {
+      let rows = await req.db('pk_student').select('*')
+      .where({
+        g_code:req.body.g_code
+      })
+      .orderBy("std_code","desc")
+      console.log(rows)
+      res.send({
+        ok: true,
+        datas: rows,
+      })
+    } catch (e) {
+      res.send({ ok: false, error: e.message })
+    }
   }
 })
 
