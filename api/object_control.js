@@ -155,6 +155,7 @@ router.post('/sh_object_control', async (req, res) => {
 
     let accessories = await req.db('pk_accessories').select(
       "pk_object_control.oc_id",
+      "pk_object_control.oc_u_id",
       "pk_object_control.oc_u_table",
       "pk_object_control.oc_oc_u_id",
       "pk_object_control.oc_oc_u_table",
