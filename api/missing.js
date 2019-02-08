@@ -185,6 +185,7 @@ try {
 ////////////////////////////////////////////////////////////////////
 
 router.post('/missing',upload.any(),async (req, res) => {
+  let db=req.db
   try {
     let rows = await req.db('pk_missing').insert({
       u_id:req.body.u_id,
@@ -194,6 +195,13 @@ router.post('/missing',upload.any(),async (req, res) => {
       ms_status:req.body.ms_status,
       ms_detail:req.body.ms_detail,
     })
+    let get_month=await db("pk_missing").select("ms_date").where("ms_id",rows)
+    // console.log(get_month[0].ms_date)
+    let spl=get_month[0].ms_date.split("-")
+    console.log(spl[1])
+    let set_chart = await req.db('pk_missing').update({
+      ms_chart_month:spl[1]
+    }).where("ms_id",rows)
     if(req.files.length==0){
       let img=await req.db("pk_img").insert({
           img_img:"veh-u-default.jpg",
