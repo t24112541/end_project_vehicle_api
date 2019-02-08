@@ -20,15 +20,20 @@ module.exports = router
 router.post('/missing_chart',async(req,res)=>{console.log("missing_chart")
   try{
     let db=req.db
-    let pk_machine_all=await db("pk_machine").count("mc_id as count_mc")
-    let pk_missing_all=await db("pk_missing").count("ms_id as count_ms")
-    let pk_object_control_all=await db("pk_object_control").count("oc_id as count_oc")
+    let pk_machine_all=await db("pk_machine").select("*").where("t_status","!=","0")
+    let pk_accessories_all=await db("pk_accessories").select("*").where("t_status","!=","0")
+    let pk_missing_all=await db("pk_missing").select("*")
+    let pk_object_control_all=await db("pk_object_control").select("*")
 
-    let pk_missing_where=await db("pk_missing").count("ms_id as count_ms").where("ms_status","ขั้นที่ 1 รอรับเรื่อง")
-    let pk_missing_where_2=await db("pk_missing").count("ms_id as count_ms").where("ms_status","ขั้นที่ 2 รับเรื่องแล้ว")
-
-    let pk_object_control_where=await db("pk_object_control").count("oc_id as count_oc").where("oc_status","ผิดระเบียบ")
-    let pk_object_control_where_2=await db("pk_object_control").count("oc_id as count_oc").where("oc_status","รอการตรวจสอบ")
+    let chart_ms=await db("pk_missing").select("*").groupByRaw("ms_chart_month").count("ms_id as num")
+    let chart_oc=await db("pk_object_control").select("*").groupByRaw("oc_chart_month").count("oc_id as num")
+    // let pk_accessories_all=await db("pk_accessories").count("ac_id as count_ac")
+    //
+    // let pk_missing_where_ac=await db("pk_missing").count("ms_id as count_ms").where("ms_status","ขั้นที่ 1 รอรับเรื่อง").where("ms_table","pk_machine")
+    // let pk_missing_where_2_ac=await db("pk_missing").count("ms_id as count_ms").where("ms_status","ขั้นที่ 2 รับเรื่องแล้ว").where("ms_table","pk_machine")
+    //
+    // let pk_object_control_where_ac=await db("pk_object_control").count("oc_id as count_oc").where("oc_status","ผิดระเบียบ").where("oc_u_table","pk_machine")
+    // let pk_object_control_where_2_ac=await db("pk_object_control").count("oc_id as count_oc").where("oc_status","รอการตรวจสอบ").where("oc_u_table","pk_machine")
 
     // console.log(pk_missing_all)
     // for(let i=1;i<=12;i++){
@@ -44,11 +49,9 @@ router.post('/missing_chart',async(req,res)=>{console.log("missing_chart")
     //
     res.send({
       ok:true,
-      pk_machine_all,pk_missing_all,pk_object_control_all,
-      pk_missing_where,
-      pk_missing_where_2,
-      pk_object_control_where,
-      pk_object_control_where_2,
+      pk_machine_all,pk_missing_all,pk_object_control_all,pk_accessories_all,
+      chart_ms,chart_oc
+
     })
   }catch(e){res.send({
     ok:false,
