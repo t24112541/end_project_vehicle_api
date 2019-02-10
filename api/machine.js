@@ -136,7 +136,7 @@ router.get("/sh_machine/:mc_id",async(req,res)=>{
 router.post("/sh_machine_w_std",async(req,res)=>{
   try{
     let db = req.db
-    let student = await req.db('pk_machine').select(
+    let student = await db('pk_machine').select(
       "pk_machine.mc_id",
       "pk_machine.mc_code",
       "pk_machine.mc_brand",
@@ -144,6 +144,7 @@ router.post("/sh_machine_w_std",async(req,res)=>{
       "pk_machine.std_id",
       "pk_machine.t_status"
     )
+    .where("pk_machine.t_status","!=",0)
     .where("pk_student.std_id","=",req.body.std_id)
     .innerJoin('pk_student', 'pk_machine.std_id', 'pk_student.std_code')
   if(student.length!=0){

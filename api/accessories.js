@@ -133,14 +133,19 @@ router.post("/sh_accessories_w_std",async(req,res)=>{
       "pk_accessories.ac_description",
       "pk_accessories.ac_u_id",
       "pk_accessories.ac_u_table",
-      "pk_accessories.t_status"
+      "pk_accessories.t_status",
+      "pk_student.std_code",
+      "pk_student.std_name",
+      "pk_student.std_lname",
+      "pk_student.std_pin_id"
     )
     .innerJoin('pk_student', 'pk_accessories.ac_u_id', 'pk_student.std_code')
     .where("pk_student.std_code","=",req.body.std_id)
     .where("pk_accessories.ac_u_table","=","pk_student")
+    .where("pk_accessories.t_status","!=",0)
     .orderBy("pk_accessories.ac_id","desc")
-
-    if(student.length!=0){
+    console.log(student)
+      if(student.length!=0){
       res.send({
         ok: true,
         datas: student,

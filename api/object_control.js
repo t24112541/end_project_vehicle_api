@@ -31,6 +31,71 @@ router.get('/item_object_control',async(req,res)=>{
     error:e.message
   })}
 })
+//////////////////////////// sh_oc_w_std ///////////////////////////////
+router.post('/sh_oc_w_std',async(req,res)=>{
+
+  try {
+    if(req.body.type=="pk_machine"){
+        let machine = await req.db('pk_object_control').select(
+          "pk_object_control.oc_id",
+          "pk_object_control.oc_u_id",
+          "pk_object_control.oc_u_table",
+          "pk_object_control.oc_oc_u_id",
+          "pk_object_control.oc_oc_u_table",
+          "pk_object_control.oc_date",
+          "pk_object_control.oc_update_date",
+          "pk_object_control.oc_status",
+          "pk_object_control.itm_oc_id",
+          "pk_object_control.oc_chart_month",
+          "pk_student.std_code",
+          "pk_item_object_control.itm_oc_name"
+        )
+        .innerJoin('pk_machine', 'pk_object_control.oc_u_id', 'pk_machine.mc_id')
+        .innerJoin('pk_student', 'pk_machine.std_id', 'pk_student.std_code')
+        .innerJoin('pk_item_object_control', 'pk_object_control.itm_oc_id', 'pk_item_object_control.itm_oc_id')
+        .orderBy("pk_object_control.oc_id","desc")
+        .where("pk_student.std_id","=",req.body.std_id)
+        console.log(machine)
+          res.send({
+            ok: true,
+            datas: machine,
+            type:"พาหนะ ทะเบียน "
+          })
+
+    }else if(req.body.type=="pk_accessories"){
+      // console.log("pk_accessories");
+      let accessories = await req.db('pk_object_control').select(
+        "pk_object_control.oc_id",
+        "pk_object_control.oc_u_id",
+        "pk_object_control.oc_u_table",
+        "pk_object_control.oc_oc_u_id",
+        "pk_object_control.oc_oc_u_table",
+        "pk_object_control.oc_date",
+        "pk_object_control.oc_update_date",
+        "pk_object_control.oc_status",
+        "pk_object_control.itm_oc_id",
+        "pk_object_control.oc_chart_month",
+        "pk_item_object_control.itm_oc_name"
+      )
+      .innerJoin('pk_accessories', 'pk_object_control.oc_u_id', 'pk_accessories.ac_id')
+      .innerJoin('pk_student', 'pk_accessories.ac_u_id', 'pk_student.std_code')
+      .innerJoin('pk_item_object_control', 'pk_object_control.itm_oc_id', 'pk_item_object_control.itm_oc_id')
+      .orderBy("pk_object_control.oc_id","desc")
+      .where("pk_student.std_id","=",req.body.std_id)
+      // console.log(accessories.length);
+        console.log(accessories)
+        res.send({
+          ok: true,
+          datas: accessories,
+          type:"อุปกรณ์"
+        })
+
+    }
+
+    } catch (e) {
+      res.send({ ok: false, error: e.message })
+    }
+})
 
 //////////////////////////// add_item_object_control ///////////////////////////
 router.post('/add_item_object_control',async(req,res)=>{
@@ -58,6 +123,13 @@ router.post('/add_object_control',upload.any(),async (req, res)=>{
       oc_status:"ผิดระเบียบ",
       itm_oc_id:req.body.itm_oc_id,
     })
+    let get_month=await db("pk_object_control").select("oc_date").where("oc_id",itm)
+    // console.log(get_month[0].ms_date)
+    let spl=get_month[0].oc_date.split("-")
+    console.log(spl[1])
+    let set_chart = await db('pk_object_control').update({
+      oc_chart_month:spl[1]
+    }).where("oc_id",itm)
     // for(let i=0;i<req.files.length;i++){
     if(req.files.length>0){
       let img=await req.db("pk_img").insert({
@@ -148,7 +220,7 @@ router.post('/sh_object_control', async (req, res) => {
     )
     .innerJoin('pk_object_control', 'pk_object_control.oc_u_id', 'pk_machine.mc_id')
     .innerJoin('pk_item_object_control', 'pk_item_object_control.itm_oc_id', 'pk_object_control.itm_oc_id')
-    // .innerJoin("pk_img","pk_missing.ms_id","pk_img.u_code")
+    // .innerJoin("pk_img","pk_object_control.ms_id","pk_img.u_code")
     .orderBy("pk_object_control.oc_id","desc")
     .where("pk_object_control.oc_id","=",req.body.oc_id)
     // .where("pk_img.u_table","pk_object_control")
@@ -175,7 +247,7 @@ router.post('/sh_object_control', async (req, res) => {
 
     .orderBy("pk_object_control.oc_id","desc")
     .where("pk_object_control.oc_id","=",req.body.oc_id)
-    // // .where("pk_img.u_table","pk_missing")
+    // // .where("pk_img.u_table","pk_object_control")
 
 
     // console.log(machine[0].mc_id)
