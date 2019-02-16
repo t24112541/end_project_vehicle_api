@@ -45,18 +45,22 @@ router.get("/sh_teacher/:t_id",async(req,res)=>{
       "pk_teacher.t_status",
       "pk_department.d_name",
       "pk_group.g_name",
-      "pk_img.img_img",
-      "pk_img.img_id"
+
     )
     .innerJoin('pk_department', 'pk_teacher.t_dep', 'pk_department.d_code')
     .innerJoin('pk_group', 'pk_group.d_code', 'pk_department.d_code')
-    .innerJoin('pk_img', 'pk_teacher.t_id', 'pk_img.u_code')
+
     .where({
       t_id: req.params.t_id
-    }).where("pk_img.u_table","pk_teacher")
+    })
+    console.log(row[0].t_id)
+    let img=await db("pk_img").select("*").where("u_code","=",row[0].t_id).where("u_table","pk_teacher")
+    console.log(row)
+    console.log(img)
     res.send({
       ok:true,
       datas: row || {},
+      image:img
     })
   }catch(e){
     res.send({ok:false,error:e.message})
@@ -78,50 +82,57 @@ router.post('/t_id', async (req, res) => {
 router.post("/teacher_add",upload.any(),async (req,res)=>{
   try{
     let db=req.db
-    let t_id=await req.db("pk_teacher").insert({
-      	t_code:req.body.t_code,
-        t_name:req.body.t_name,
-        t_dep:req.body.t_dep,
-        t_tel:req.body.t_tel,
-      	t_username:req.body.t_code,
-      	t_password:req.body.t_tel
-    })
-    var cv_str=req.body.mst_1
-    var sp=cv_str.split(",")
-    for(i=1;i<sp.length;i++){
-      let pk_match_std_tch=await req.db("pk_match_std_tch").insert({
-        t_id:t_id,
-        g_code:sp[i]
+    let chk_teacher=await db("pk_teacher").where("t_code",req.body.t_code)
+    if(chk_teacher.length==0){
+      let t_id=await req.db("pk_teacher").insert({
+        	t_code:req.body.t_code,
+          t_name:req.body.t_name,
+          t_dep:req.body.t_dep,
+          t_tel:req.body.t_tel,
+        	t_username:req.body.t_code,
+        	t_password:req.body.t_tel
       })
-    }
+      var cv_str=req.body.mst_1
+      var sp=cv_str.split(",")
+      for(i=1;i<sp.length;i++){
+        let pk_match_std_tch=await req.db("pk_match_std_tch").insert({
+          t_id:t_id,
+          g_code:sp[i]
+        })
+      }
 
-    if(req.files.length==0){
-      let img=await req.db("pk_img").insert({
-          img_img:"veh-u-default.jpg",
-          u_table:req.body.u_table,
-          u_code:std_id,
+      if(req.files.length==0){
+        let img=await req.db("pk_img").insert({
+            img_img:"veh-u-default.jpg",
+            u_table:req.body.u_table,
+            u_code:std_id,
+        })
+      }
+      else{
+        for(let i=0;i<req.files.length;i++){
+          let img=await req.db("pk_img").insert({
+              img_img:req.files[i].filename,
+              u_table:req.body.u_table,
+              u_code:t_id,
+          })
+        }
+      }
+      let log=await req.db("pk_teacher_log").insert({
+        t_id:t_id,
+        t_code:req.body.t_code,
+        t_name:req.body.t_name,
+        d_code:req.body.t_dep,
+        t_tel:req.body.t_tel,
+        t_username:req.body.t_code,
+        t_password:req.body.t_tel,
+        t_log_work:"เพิ่มข้อมูล",
+        u_id:req.body.u_id
       })
     }
     else{
-      for(let i=0;i<req.files.length;i++){
-        let img=await req.db("pk_img").insert({
-            img_img:req.files[i].filename,
-            u_table:req.body.u_table,
-            u_code:t_id,
-        })
-      }
+      res.send({ok:false,txt:"พบข้อมูล "+req.body.t_code+" อยู่ในระบบอยู่แล้ว",alt:"error"})
     }
-    let log=await req.db("pk_teacher_log").insert({
-      t_id:t_id,
-      t_code:req.body.t_code,
-      t_name:req.body.t_name,
-      d_code:req.body.t_dep,
-      t_tel:req.body.t_tel,
-      t_username:req.body.t_code,
-      t_password:req.body.t_tel,
-      t_log_work:"เพิ่มข้อมูล",
-      u_id:req.body.u_id
-    })
+
 
     res.send({ok:true,txt:"เพิ่มข้อมูล "+req.body.t_code+" สำเร็จ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถเพิ่มข้อมูลได้",alt:"error"})}
@@ -154,7 +165,7 @@ router.post('/search/', async (req, res) => {
     .where("t_status","!=",0)
     .where("t_name","like",'%'+req.body.txt_search+'%')
     .orWhere("t_code","like",'%'+req.body.txt_search+'%')
-    
+
     res.send({
       ok: true,
       datas: rows,
