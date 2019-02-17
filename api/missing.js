@@ -16,6 +16,8 @@ module.exports = router
 
 router.post('/list', async (req, res) => {
   try {
+    let field_name=''
+    let name_1=[]
     let db=req.db
     let missing = await req.db('pk_missing').select(
 
@@ -29,7 +31,29 @@ router.post('/list', async (req, res) => {
       "pk_missing.ms_status"
     )
     .where("ms_table","=",req.body.cv_filter)
+    .where("ms_status","=",req.body.cv_filter_stp)
     .orderBy("pk_missing.ms_id","desc")
+
+    for(let i=0;i<missing.length;i++){
+      let tb_name=missing[i].ms_u_table
+
+      if(tb_name=='pk_teacher'){
+        field_name="t_code"
+        let u_1=await db(tb_name).where(field_name,missing[i].ms_u_id)
+        name_1[i]=u_1[0].t_name
+      }
+      else if(tb_name=="pk_admin"){
+        field_name="a_username"
+        let u_1=await db(tb_name).where(field_name,missing[i].ms_u_id)
+        name_1[i]=u_1[0].a_name+' '+u_1[0].a_lname
+      }
+      else if(tb_name=="pk_student"){
+        field_name="std_code"
+        let u_1=await db(tb_name).where(field_name,missing[i].ms_u_id)
+        name_1[i]=u_1[0].std_name+' '+u_1[0].std_lname
+      }
+      missing[i].u_id=name_1[i]
+    }
 
     let stp1=await db('pk_missing').count('ms_id as count').where("ms_status","ขั้นที่ 1 รอรับเรื่อง").where("ms_table","=",req.body.cv_filter)
     let stp2=await db('pk_missing').count('ms_id as count').where("ms_status","ขั้นที่ 2 รับเรื่องแล้ว").where("ms_table","=",req.body.cv_filter)

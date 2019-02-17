@@ -205,57 +205,63 @@ router.get("/sh_std/:std_id",async(req,res)=>{
 
 router.post("/std_add",upload.any(),async (req,res)=>{
   try{
-    let std_id=await req.db("pk_student").insert({
-      	std_code:req.body.std_code,
-        std_gender:req.body.std_gender,
-        std_prename:req.body.std_prename,
-        std_name:req.body.std_name,
-        std_lname:req.body.std_lname,
-        std_pin_id:req.body.std_pin_id,
-        std_birthday:req.body.std_birthday,
-      	std_blood:req.body.std_blood,
-      	g_code:req.body.g_code,
-      	std_username:req.body.std_code,
-      	std_password:req.body.std_pin_id,
-        std_tel:req.body.std_tel,
-        std_tel2:req.body.std_tel2
-    })
-    if(req.files.length==0){
-      let img=await req.db("pk_img").insert({
-          img_img:"veh-u-default.jpg",
-          u_table:req.body.u_table,
-          u_code:std_id,
+    let chk_std=await req.db("pk_student").where("std_code",req.body.std_code)
+    if (chk_std.length==0){
+      let std_id=await req.db("pk_student").insert({
+        	std_code:req.body.std_code,
+          std_gender:req.body.std_gender,
+          std_prename:req.body.std_prename,
+          std_name:req.body.std_name,
+          std_lname:req.body.std_lname,
+          std_pin_id:req.body.std_pin_id,
+          std_birthday:req.body.std_birthday,
+        	std_blood:req.body.std_blood,
+        	g_code:req.body.g_code,
+        	std_username:req.body.std_code,
+        	std_password:req.body.std_pin_id,
+          std_tel:req.body.std_tel,
+          std_tel2:req.body.std_tel2
       })
-    }
-    else{
-      for(let i=0;i<req.files.length;i++){
+      if(req.files.length==0){
         let img=await req.db("pk_img").insert({
-            img_img:req.files[i].filename,
+            img_img:"veh-u-default.jpg",
             u_table:req.body.u_table,
             u_code:std_id,
         })
       }
+      else{
+        for(let i=0;i<req.files.length;i++){
+          let img=await req.db("pk_img").insert({
+              img_img:req.files[i].filename,
+              u_table:req.body.u_table,
+              u_code:std_id,
+          })
+        }
+      }
+
+      let log=await req.db("pk_student_log").insert({
+          std_id:std_id,
+        	std_code:req.body.std_code,
+          std_gender:req.body.std_gender,
+          std_prename:req.body.std_prename,
+          std_name:req.body.std_name,
+          std_lname:req.body.std_lname,
+          std_tel:req.body.std_tel,
+          std_tel2:req.body.std_tel2,
+          std_pin_id:req.body.std_pin_id,
+          std_birthday:req.body.std_birthday,
+        	std_blood:req.body.std_blood,
+        	g_code:req.body.g_code,
+        	std_username:req.body.std_code,
+        	std_password:req.body.std_pin_id,
+          std_log_work:"เพิ่มข้อมูล",
+          u_id:req.body.u_id
+      })
+      res.send({ok:true,txt:"เพิ่มข้อมูล "+req.body.std_code+" สำเร็จ",alt:"success"})
+    }else{
+      res.send({ok:false,txt:"พบข้อมูล "+req.body.std_code+" อยู่ในระบบอยู่แล้ว",alt:"error"})
     }
 
-    let log=await req.db("pk_student_log").insert({
-        std_id:std_id,
-      	std_code:req.body.std_code,
-        std_gender:req.body.std_gender,
-        std_prename:req.body.std_prename,
-        std_name:req.body.std_name,
-        std_lname:req.body.std_lname,
-        std_tel:req.body.std_tel,
-        std_tel2:req.body.std_tel2,
-        std_pin_id:req.body.std_pin_id,
-        std_birthday:req.body.std_birthday,
-      	std_blood:req.body.std_blood,
-      	g_code:req.body.g_code,
-      	std_username:req.body.std_code,
-      	std_password:req.body.std_pin_id,
-        std_log_work:"เพิ่มข้อมูล",
-        u_id:req.body.u_id
-    })
-    res.send({ok:true,txt:"เพิ่มข้อมูล "+req.body.std_code+" สำเร็จ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถเพิ่มข้อมูลได้",alt:"error"})}
 })
 
