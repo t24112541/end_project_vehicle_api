@@ -18,6 +18,8 @@ router.post('/list', async (req, res) => {
   try {
     let field_name=''
     let name_1=[]
+    let name_2=[]
+    let name_3=[]
     let db=req.db
     let missing = await req.db('pk_missing').select(
 
@@ -36,7 +38,7 @@ router.post('/list', async (req, res) => {
 
     for(let i=0;i<missing.length;i++){
       let tb_name=missing[i].ms_u_table
-
+      let tb_dev=missing[i].ms_table
       if(tb_name=='pk_teacher'){
         field_name="t_code"
         let u_1=await db(tb_name).where(field_name,missing[i].ms_u_id)
@@ -52,7 +54,42 @@ router.post('/list', async (req, res) => {
         let u_1=await db(tb_name).where(field_name,missing[i].ms_u_id)
         name_1[i]=u_1[0].std_name+' '+u_1[0].std_lname
       }
+
+      if(tb_dev=='pk_machine'){
+        field_dev_name="mc_id"
+        let field_1=''
+        let bld_name=''
+        let u_1=await db(tb_dev).where(field_dev_name,missing[i].u_id)
+        if(u_1[0].mc_u_table=="pk_teacher"){field_1="t_code"
+          let u_2=await db(u_1[0].mc_u_table).select("t_name").where(field_1,u_1[0].std_id)
+          bld_name=u_2[0].t_name
+        }
+        else if(u_1[0].mc_u_table=="pk_student"){field_1="std_code"
+          let u_2=await db(u_1[0].mc_u_table).select("std_name","std_lname").where(field_1,u_1[0].std_id)
+          bld_name=u_2[0].std_name+" "+u_2[0].std_lname
+        }
+        name_2[i]=u_1[0].mc_code
+        name_3[i]=bld_name
+      }
+      else if(tb_dev=="pk_accessories"){
+        field_dev_name="ac_id"
+        let field_1=''
+        let bld_name=''
+        let u_1=await db(tb_dev).where(field_dev_name,missing[i].u_id)
+        if(u_1[0].ac_u_table=="pk_teacher"){field_1="t_code"
+          let u_2=await db(u_1[0].ac_u_table).select("t_name").where(field_1,u_1[0].ac_u_id)
+          bld_name=u_2[0].t_name
+        }
+        else if(u_1[0].ac_u_table=="pk_student"){field_1="std_code"
+          let u_2=await db(u_1[0].ac_u_table).select("std_name","std_lname").where(field_1,u_1[0].ac_u_id)
+          bld_name=u_2[0].std_name+" "+u_2[0].std_lname
+        }
+        name_2[i]=u_1[0].ac_name
+        name_3[i]=bld_name
+      }
+      missing[i].ms_u_id=name_2[i]
       missing[i].u_id=name_1[i]
+      missing[i].ms_u_table=name_3[i]
     }
 
     let stp1=await db('pk_missing').count('ms_id as count').where("ms_status","ขั้นที่ 1 รอรับเรื่อง").where("ms_table","=",req.body.cv_filter)
