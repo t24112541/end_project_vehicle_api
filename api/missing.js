@@ -203,7 +203,7 @@ try {
       .innerJoin('pk_student', 'pk_student.std_code', 'pk_machine.std_id')
       .orderBy("pk_missing.ms_id","desc")
       .where("pk_student.std_id","=",req.body.std_id)
-
+      console.log(machine)
         res.send({
           ok: true,
           datas: machine,
