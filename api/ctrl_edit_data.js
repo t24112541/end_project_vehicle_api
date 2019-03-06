@@ -28,6 +28,6 @@ router.post("/update_ctrl_edit_data",async(req,res)=>{
   try{
     let db=req.db
     let ctrl=await db("pk_control_edit_data").update("ctrl_status",req.body.ctrl_status).where("ctrl_id",req.body.ctrl_id)
-    res.send({ok:true})
+    res.send({ok:true,txt:"บันทึกเรียบ้อย ",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถทำงานดังกล่าวได้ "+e.message,alt:"error"})}
 })
