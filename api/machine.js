@@ -15,7 +15,16 @@ const upload = multer({ storage: storage })
 const cv_upload=multer({ storage: storage }).any()
 module.exports = router
 
-
+router.post("/confirm_machine",async(req,res)=>{
+  let db=req.db
+  try{
+    let que=await db("pk_machine").update({
+      mc_confirm:req.body.mc_confirm
+    }).where("mc_id",req.body.mc_id)
+    res.send({ok:true,txt:"บันทึกข้อมูลแล้ว",alt:"success"})
+  }
+  catch(e){}
+})
 router.get('/list', async (req, res) => {
   try {
     let rows = await req.db('pk_machine').select('*').orderBy("mc_id","desc")
@@ -63,6 +72,7 @@ router.get("/sh_machine/:mc_id",async(req,res)=>{
       "pk_machine.mc_code",
       "pk_machine.mc_brand",
       "pk_machine.mc_series",
+      "pk_machine.mc_confirm",
       "pk_machine.std_id",
       "pk_student.std_id",
       "pk_student.std_code",
