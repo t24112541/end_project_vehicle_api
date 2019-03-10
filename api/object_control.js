@@ -124,7 +124,7 @@ router.post('/add_object_control',upload.any(),async (req, res)=>{
       itm_oc_id:req.body.itm_oc_id,
     })
     let get_month=await db("pk_object_control").select("oc_date").where("oc_id",itm)
-    // console.log(get_month[0].ms_date)
+    // console.log(get_month[0].oc_date)
     let spl=get_month[0].oc_date.split("-")
     console.log(spl[1])
     let set_chart = await db('pk_object_control').update({
@@ -168,9 +168,14 @@ router.post('/update_object_control',async(req,res)=>{
 
 router.post('/list', async (req, res) => {
   try {
+    let field_name=''
+    let name_1=[]
+    let name_2=[]
+    let name_3=[]
     let db=req.db
     let rows = await db('pk_object_control').select("*")
     .where("oc_u_table","=",req.body.cv_filter)
+    .where("oc_status","=",req.body.cv_filter_stp)
     .orderBy("oc_id","desc")
     .innerJoin("pk_item_object_control","pk_item_object_control.itm_oc_id","pk_object_control.itm_oc_id")
 
@@ -182,7 +187,62 @@ router.post('/list', async (req, res) => {
     let machines=await db("pk_object_control").count("oc_id as count").where("oc_u_table","pk_machine").where("oc_status","ผิดระเบียบ")
     let accessories=await db("pk_object_control").count("oc_id as count").where("oc_u_table","pk_accessories").where("oc_status","ผิดระเบียบ")
 
-    console.log(rows)
+////////////////////////   ชื่อคนแจ้ง ///////////////////////////////
+    for(let i=0;i<rows.length;i++){
+      let tb_name=rows[i].oc_oc_u_table
+      let tb_dev=rows[i].oc_u_table
+      if(tb_name=='pk_teacher'){
+        field_name="t_code"
+        let u_1=await db(tb_name).where(field_name,rows[i].oc_oc_u_id)
+        name_1[i]=u_1[0].t_name
+      }
+      else if(tb_name=="pk_admin"){
+        field_name="a_username"
+        let u_1=await db(tb_name).where(field_name,rows[i].oc_oc_u_id)
+        name_1[i]=u_1[0].a_name+' '+u_1[0].a_lname
+      }
+      else if(tb_name=="pk_student"){
+        field_name="std_code"
+        let u_1=await db(tb_name).where(field_name,rows[i].oc_oc_u_id)
+        name_1[i]=u_1[0].std_name+' '+u_1[0].std_lname
+      }
+////////////////////////   ชื่อเจ้าของ ///////////////////////////////////////////////////////////////
+      if(tb_dev=='pk_machine'){
+        field_dev_name="mc_id"
+        let field_1=''
+        let bld_name=''
+        let u_1=await db(tb_dev).where(field_dev_name,rows[i].oc_u_id)   /////////////////////  ชื่อของ
+        if(u_1[0].mc_u_table=="pk_teacher"){field_1="t_code"
+          let u_2=await db(u_1[0].mc_u_table).select("t_name").where(field_1,u_1[0].std_id)
+          bld_name=u_2[0].t_name
+        }
+        else if(u_1[0].mc_u_table=="pk_student"){field_1="std_code"
+          let u_2=await db(u_1[0].mc_u_table).select("std_name","std_lname").where(field_1,u_1[0].std_id)
+          bld_name=u_2[0].std_name+" "+u_2[0].std_lname
+        }
+        name_2[i]=u_1[0].mc_code
+        name_3[i]=bld_name
+      }
+      else if(tb_dev=="pk_accessories"){
+        field_dev_name="ac_id"
+        let field_1=''
+        let bld_name=''
+        let u_1=await db(tb_dev).where(field_dev_name,rows[i].oc_u_id)
+        if(u_1[0].ac_u_table=="pk_teacher"){field_1="t_code"
+          let u_2=await db(u_1[0].ac_u_table).select("t_name").where(field_1,u_1[0].ac_u_id)
+          bld_name=u_2[0].t_name
+        }
+        else if(u_1[0].ac_u_table=="pk_student"){field_1="std_code"
+          let u_2=await db(u_1[0].ac_u_table).select("std_name","std_lname").where(field_1,u_1[0].ac_u_id)
+          bld_name=u_2[0].std_name+" "+u_2[0].std_lname
+        }
+        name_2[i]=u_1[0].ac_name
+        name_3[i]=bld_name
+      }
+      rows[i].oc_u_table=name_2[i]
+      rows[i].oc_u_id=name_1[i]
+      rows[i].oc_oc_u_id=name_3[i]
+    }
       res.send({
         ok: true,
         datas:rows,
@@ -220,7 +280,7 @@ router.post('/sh_object_control', async (req, res) => {
     )
     .innerJoin('pk_object_control', 'pk_object_control.oc_u_id', 'pk_machine.mc_id')
     .innerJoin('pk_item_object_control', 'pk_item_object_control.itm_oc_id', 'pk_object_control.itm_oc_id')
-    // .innerJoin("pk_img","pk_object_control.ms_id","pk_img.u_code")
+    // .innerJoin("pk_img","pk_object_control.oc_id","pk_img.u_code")
     .orderBy("pk_object_control.oc_id","desc")
     .where("pk_object_control.oc_id","=",req.body.oc_id)
     // .where("pk_img.u_table","pk_object_control")

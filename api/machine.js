@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const multer = require('multer')
+const dateFormat = require('dateformat');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -15,7 +16,27 @@ const upload = multer({ storage: storage })
 const cv_upload=multer({ storage: storage }).any()
 module.exports = router
 
+router.post("/confirm_machine",async(req,res)=>{
+  let db=req.db
+  var day=dateFormat(new Date(), "yyyy-mm-dd h:MM:ss")
+  console.log(day)
+  try{
+    if(req.body.mc_confirm=='true'){
+      let que=await db("pk_machine").update({
+        mc_confirm:req.body.mc_confirm,
+        mc_confirm_date:day
+      }).where("mc_id",req.body.mc_id)
+    }
+    else{
+      let que=await db("pk_machine").update({
+        mc_confirm:req.body.mc_confirm
+      }).where("mc_id",req.body.mc_id)
+    }
 
+    res.send({ok:true,txt:"บันทึกข้อมูลแล้ว",alt:"success"})
+  }
+  catch(e){res.send({ok:true,txt:"ไม่สามารถบันทึกข้อมูลได้ "+e.message,alt:"success"})}
+})
 router.get('/list', async (req, res) => {
   try {
     let rows = await req.db('pk_machine').select('*').orderBy("mc_id","desc")
@@ -63,6 +84,8 @@ router.get("/sh_machine/:mc_id",async(req,res)=>{
       "pk_machine.mc_code",
       "pk_machine.mc_brand",
       "pk_machine.mc_series",
+      "pk_machine.mc_confirm",
+      "pk_machine.mc_confirm_date",
       "pk_machine.std_id",
       "pk_student.std_id",
       "pk_student.std_code",

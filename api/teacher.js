@@ -105,8 +105,9 @@ router.post("/teacher_add",upload.any(),async (req,res)=>{
         let img=await req.db("pk_img").insert({
             img_img:"veh-u-default.jpg",
             u_table:req.body.u_table,
-            u_code:std_id,
+            u_code:t_id,
         })
+
       }
       else{
         for(let i=0;i<req.files.length;i++){
@@ -115,6 +116,7 @@ router.post("/teacher_add",upload.any(),async (req,res)=>{
               u_table:req.body.u_table,
               u_code:t_id,
           })
+
         }
       }
       let log=await req.db("pk_teacher_log").insert({

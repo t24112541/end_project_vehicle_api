@@ -192,11 +192,26 @@ router.get("/sh_std/:std_id",async(req,res)=>{
     .where("pk_student.std_id","=",req.params.std_id)
 
     let img=await db("pk_img").select("*").where("u_code",req.params.std_id).where("u_table","pk_student")
+    let machine=await db("pk_machine").where("std_id",row[0].std_code).where("mc_u_table","pk_student")
 
+    for(let i=0;i<machine.length;i++){
+      let img_mc=await db("pk_img").where("u_code",machine[i].mc_id).where("u_table","pk_machine")
+      machine[i].t_status="http://localhost:34001/img/machine/"+img_mc[0].img_img
+    }
+
+    let accessories=await db("pk_accessories").where("ac_u_id",row[0].std_code).where("ac_u_table","pk_student")
+
+    for(let i=0;i<accessories.length;i++){
+      console.log(i)
+      let img_ac=await db("pk_img").where("u_code",accessories[i].ac_id).where("u_table","pk_accessories")
+      accessories[i].t_status="http://localhost:34001/img/accessories/"+img_ac[0].img_img
+    }
+    console.log(machine)
+    console.log(accessories)
     res.send({
       ok:true,
       datas: row[0] || {},
-      img,
+      img,machine,accessories
     })
   }catch(e){
     res.send({ok:false,error:e.message})
