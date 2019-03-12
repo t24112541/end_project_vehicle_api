@@ -25,8 +25,8 @@ router.post('/missing_chart',async(req,res)=>{console.log("missing_chart")
     let pk_missing_all=await db("pk_missing").select("*")
     let pk_object_control_all=await db("pk_object_control").select("*")
 
-    let chart_ms=await db("pk_missing").select("*").groupByRaw("ms_chart_month").count("ms_id as num")
-    let chart_oc=await db("pk_object_control").select("*").groupByRaw("oc_chart_month").count("oc_id as num")
+    let chart_ms=await db("pk_missing").select("*").groupBy("ms_chart_month").count("ms_id as num")
+    let chart_oc=await db("pk_object_control").select("*").groupBy("oc_chart_month").count("oc_id as num")
     // let pk_accessories_all=await db("pk_accessories").count("ac_id as count_ac")
     //
     // let pk_missing_where_ac=await db("pk_missing").count("ms_id as count_ms").where("ms_status","ขั้นที่ 1 รอรับเรื่อง").where("ms_table","pk_machine")
