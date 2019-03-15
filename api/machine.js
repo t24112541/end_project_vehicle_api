@@ -5,7 +5,7 @@ const dateFormat = require('dateformat');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, './public/img/machine')
+    cb(null, './public/files/img/machine')
   },
   filename: function (req, file, cb) {
     cb(null, "veh-mc" + '-' + Date.now()+".jpg")

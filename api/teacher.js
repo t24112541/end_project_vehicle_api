@@ -4,7 +4,7 @@ const multer = require('multer')
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, './public/img/teachers')
+    cb(null, './public/files/img/teachers')
   },
   filename: function (req, file, cb) {
     cb(null, "veh-t" + '-' + Date.now()+".jpg")
@@ -53,6 +53,7 @@ router.get("/sh_teacher/:t_id",async(req,res)=>{
     .where({
       t_id: req.params.t_id
     })
+    console.log("row[0].t_id")
     console.log(row[0].t_id)
     let img=await db("pk_img").select("*").where("u_code","=",row[0].t_id).where("u_table","pk_teacher")
     console.log(row)
@@ -182,9 +183,9 @@ router.post("/teacher_update",upload.any(),async(req,res)=>{//console.log(req.bo
     let sql=await req.db("pk_teacher").update({
         t_code:req.body.t_code,
         t_name:req.body.t_name,
-        t_dep:req.body.t_dep,
         t_tel:req.body.t_tel,
-      	t_password:req.body.t_tel
+        t_username:req.body.t_username,
+      	t_password:req.body.t_password
     }).where({
       t_id:req.body.t_id
     })
