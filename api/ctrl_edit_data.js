@@ -4,7 +4,7 @@ const multer = require('multer')
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, './public/img/missing')
+    cb(null, './public/files/img/missing')
   },
   filename: function (req, file, cb) {
     cb(null, "veh-ms" + '-' + Date.now()+".jpg")
