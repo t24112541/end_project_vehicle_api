@@ -143,14 +143,12 @@ router.post("/sh_accessories_w_std",async(req,res)=>{
     .where("pk_student.std_code","=",req.body.std_id)
     .where("pk_accessories.ac_u_table","=","pk_student")
     .where("pk_accessories.t_status","!=",0)
-    .orderBy("pk_accessories.ac_id","desc")
-    console.log(student)
-      if(student.length!=0){
+
       res.send({
         ok: true,
         datas: student,
       })
-    }
+    
   }catch(e){
     res.send({ok:false,error:e.message})
   }

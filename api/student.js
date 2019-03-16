@@ -400,28 +400,42 @@ router.post('/restore', async (req, res) => {
   }
 })
 
-router.post('/sh_profile', async (req, res) => {
+router.post('/sh_profile',async (req, res) => {
   try {
+    let db=req.db
     let rows = await req.db('pk_student').select('*').where("std_id","=",req.body.id)
+    let img=await db("pk_img").select("*").where("u_code","=",rows[0].std_id).where("u_table","pk_student")
     res.send({
       ok: true,
       datas: rows,
+      image:img
     })
   } catch (e) {
     res.send({ ok: false, error: e.message })
   }
 })
 
-router.post("/profile_update",async(req,res)=>{
+router.post("/profile_update",upload.any(), async(req,res)=>{
   try{
+    let db=req.db
     let sql=await req.db("pk_student").update({
         std_name:req.body.std_name,
         std_lname:req.body.std_lname,
         std_tel:req.body.std_tel,
         std_tel2:req.body.std_tel2,
+        std_birthday:req.body.std_birthday,
+        std_blood:req.body.std_blood,
     }).where({
       std_id:req.body.id
     })
+    for(let i=0;i<req.files.length;i++){
+        var cv_str=req.files[i].fieldname
+        var sp=cv_str.split("-")
+        let sel=sp[1]
+        let img=await req.db("pk_img").update({
+          	img_img:req.files[i].filename,
+      }).where("img_id","=",sel)
+    }
     res.send({ok:true,txt:"อัพเดทข้อมูลแล้ว",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถอัพเดทข้อมูลได้",alt:"error"})}
 })

@@ -259,17 +259,36 @@ router.post('/restore', async (req, res) => {
 
 router.post('/sh_profile', async (req, res) => {
   try {
-    let rows = await req.db('pk_teacher').select('*').where("t_id","=",req.body.id)
+    let db = req.db
+    let row = await db('pk_teacher').select(
+      "pk_teacher.t_id",
+      "pk_teacher.t_code",
+      "pk_teacher.t_name",
+      "pk_teacher.t_dep",
+      "pk_teacher.t_tel",
+      "pk_teacher.t_username",
+      "pk_teacher.t_password",
+      "pk_teacher.t_status",
+    )
+    .where({
+      t_id: req.body.id
+    })
+    // console.log("row[0].t_id")
+    // console.log(row[0].t_id)
+    let img=await db("pk_img").select("*").where("u_code","=",row[0].t_id).where("u_table","pk_teacher")
+    // console.log(row)
+    // console.log(img)
     res.send({
-      ok: true,
-      datas: rows,
+      ok:true,
+      datas: row || {},
+      image:img
     })
   } catch (e) {
     res.send({ ok: false, error: e.message })
   }
 })
 
-router.post("/profile_update",async(req,res)=>{
+router.post("/profile_update",upload.any(),async(req,res)=>{
   try{
     let sql=await req.db("pk_teacher").update({
         t_name:req.body.t_name,
@@ -277,6 +296,14 @@ router.post("/profile_update",async(req,res)=>{
     }).where({
       t_id:req.body.id
     })
+    for(let i=0;i<req.files.length;i++){
+      var cv_str=req.files[i].fieldname
+      var sp=cv_str.split("-")
+      let sel=sp[1]
+      let img=await req.db("pk_img").update({
+        	img_img:req.files[i].filename,
+      }).where("img_id","=",sel)
+    }
     res.send({ok:true,txt:"อัพเดทข้อมูลแล้ว",alt:"success"})
   }catch(e){res.send({ok:false,txt:"ไม่สามารถอัพเดทข้อมูลได้",alt:"error"})}
 })
