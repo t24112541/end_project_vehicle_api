@@ -170,12 +170,12 @@ router.post("/sh_machine_w_std",async(req,res)=>{
     .where("pk_machine.t_status","!=",0)
     .where("pk_student.std_id","=",req.body.std_id)
     .innerJoin('pk_student', 'pk_machine.std_id', 'pk_student.std_code')
-  if(student.length!=0){
+
       res.send({
         ok: true,
         datas: student,
       })
-    }
+    
   }catch(e){
     res.send({ok:false,error:e.message})
   }
