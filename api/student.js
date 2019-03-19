@@ -196,7 +196,7 @@ router.get("/sh_std/:std_id",async(req,res)=>{
 
     for(let i=0;i<machine.length;i++){
       let img_mc=await db("pk_img").where("u_code",machine[i].mc_id).where("u_table","pk_machine")
-      machine[i].t_status="http://localhost:9090/img/machine/"+img_mc[0].img_img
+      machine[i].t_status="/files/img/machine/"+img_mc[0].img_img
     }
 
     let accessories=await db("pk_accessories").where("ac_u_id",row[0].std_code).where("ac_u_table","pk_student")
@@ -204,7 +204,7 @@ router.get("/sh_std/:std_id",async(req,res)=>{
     for(let i=0;i<accessories.length;i++){
       console.log(i)
       let img_ac=await db("pk_img").where("u_code",accessories[i].ac_id).where("u_table","pk_accessories")
-      accessories[i].t_status="http://localhost:9090/img/accessories/"+img_ac[0].img_img
+      accessories[i].t_status="/files/img/accessories/"+img_ac[0].img_img
     }
     console.log(machine)
     console.log(accessories)
