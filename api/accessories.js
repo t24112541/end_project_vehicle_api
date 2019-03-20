@@ -148,7 +148,7 @@ router.post("/sh_accessories_w_std",async(req,res)=>{
         ok: true,
         datas: student,
       })
-    
+
   }catch(e){
     res.send({ok:false,error:e.message})
   }
@@ -156,6 +156,7 @@ router.post("/sh_accessories_w_std",async(req,res)=>{
 /////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////   26/11/61
 router.post("/accessories_add",upload.any(),async (req,res,next)=>{
+  console.log("accessories_add")
   try{
     let ac_id=await req.db("pk_accessories").insert({
       	ac_name:req.body.ac_name,
@@ -180,7 +181,7 @@ router.post("/accessories_add",upload.any(),async (req,res,next)=>{
         ac_log_work:"เพิ่มข้อมูล"
     })
     res.send({ok:true,txt:"เพิ่มข้อมูล "+req.body.ac_name+" สำเร็จ",alt:"success"})
-  }catch(e){res.send({ok:false,txt:"(-_-') (add!)ไม่สามารถเพิ่มข้อมูลได้",alt:"error"})}
+  }catch(e){res.send({ok:false,txt:"(-_-') (add!)ไม่สามารถเพิ่มข้อมูลได้ "+e.message,alt:"error"})}
 })
 
 router.post("/accessories_del",async (req,res)=>{
