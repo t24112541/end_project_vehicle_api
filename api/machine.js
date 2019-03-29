@@ -129,7 +129,9 @@ router.get("/sh_machine/:mc_id",async(req,res)=>{
       "pk_img.img_img",
       "pk_img.u_code",
       "pk_img.u_table",
-      "pk_machine.mc_u_table"
+      "pk_machine.mc_u_table",
+      "pk_machine.mc_confirm",
+      "pk_machine.mc_confirm_date",
 
     ).where("pk_machine.mc_id","=",req.params.mc_id)
     .innerJoin('pk_machine', 'pk_teacher.t_code', 'pk_machine.std_id')
@@ -175,7 +177,7 @@ router.post("/sh_machine_w_std",async(req,res)=>{
         ok: true,
         datas: student,
       })
-    
+
   }catch(e){
     res.send({ok:false,error:e.message})
   }
